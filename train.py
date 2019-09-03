@@ -1,13 +1,16 @@
 import datetime
 import tensorflow as tf
+import numpy as np
 import h5py
+import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 from Noiser import Noiser
 from Net import WaveNet
-from Batch import get_batch, get_test
+from Batch import get_batch, get_val
 
 
-f_train = h5py.File("TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
-f_test = h5py.File("TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
+f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
+f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 input_data = tf.placeholder(tf.float32, [None, None, 1])
@@ -57,7 +60,7 @@ for i in range(num_epoch):
         if j % 10 == 0:
             print('loss: '+str(loss_hist[-1]))
     
-    val_data, val_label = get_test(f_test, batch_size)
+    val_data, val_label = get_val(f_test, batch_size)
     validation = sess.run(loss, feed_dict={input_data: val_data, input_label: val_label})
     val_loss.append(validation)
     print('iter num: '+str(i)+' loss: '+str(loss_hist[-1])+' val_loss: '+str(val_loss[-1]))
@@ -65,9 +68,32 @@ for i in range(num_epoch):
 end = datetime.datetime.now()
 print('time: '+str(end-start))
 
-#testing
+def showplot(pred,name):
+	test_label = np.asarray(f_test['m1m2'])
+	error1 = [abs(pred.T[0][i]-test_label.T[0][i])/test_label.T[0][i] for i in range(len(test_label))]
+	error2 = [abs(pred.T[1][i]-test_label.T[1][i])/test_label.T[1][i] for i in range(len(test_label))]
+	plt.figure(figsize=(18,20))
+	cm = plt.cm.get_cmap('seismic')
+	plt.subplot(211)
+	sc = plt.scatter(test_label.T[0], test_label.T[1], c=error1, vmin=0.0025, vmax=0.75, 
+	                 cmap=cm, norm=colors.LogNorm(vmin=np.amin(error1), vmax=np.amax(error1)))
+	plt.colorbar(sc)
+	plt.xlabel('m1 mass')
+	plt.ylabel('m2 mass')
+	plt.title(name)
+	plt.subplot(212)
+	sc = plt.scatter(test_label.T[0], test_label.T[1], c=error2, vmin=0.0025, vmax=0.75, 
+	                 cmap=cm, norm=colors.LogNorm(vmin=np.amin(error2), vmax=np.amax(error2)))
+	plt.colorbar(sc)
+	plt.xlabel('m1 mass')
+	plt.ylabel('m2 mass')
+	plt.title(name)
+	plt.savefig(name+'.png')
+
+#testing without shift
 start = 0
 end = 8192
+
 pred = []
 for i in range(len(f_test['WhitenedSignals'])):
     test_data = f_test['WhitenedSignals'][i][start:end].reshape(1,end-start,1)
@@ -77,4 +103,20 @@ pred = np.asarray(pred)
 test_label = np.asarray(f_test['m1m2'])
 m1 = np.mean(np.divide(abs(pred.T[0]-test_label.T[0]),test_label.T[0]))
 m2 = np.mean(np.divide(abs(pred.T[1]-test_label.T[1]),test_label.T[1]))
-print('start: '+str(start)+' end: '+str(end)+' -- m1: '+str(m1)+' m2: '+str(m2))
+print('without shift--m1: '+str(m1)+' m2: '+str(m2))
+showplot(pred,'noshift')
+
+pred = []
+noise = Noiser()
+for i in range(len(f_test['WhitenedSignals'])):
+    test_data = f_test['WhitenedSignals'][i][start:end].reshape(1,end-start)
+    test_data = noise.add_shift(test_data)
+    test_data = test_data.reshape(1,end-start,1)
+    test_label = f_test['m1m2'][i].reshape(1,2)
+    pred.append(sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label})[0])
+pred = np.asarray(pred)
+test_label = np.asarray(f_test['m1m2'])
+m1 = np.mean(np.divide(abs(pred.T[0]-test_label.T[0]),test_label.T[0]))
+m2 = np.mean(np.divide(abs(pred.T[1]-test_label.T[1]),test_label.T[1]))
+print('with shift--m1: '+str(m1)+' m2: '+str(m2))
+showplot(pred,'shift')

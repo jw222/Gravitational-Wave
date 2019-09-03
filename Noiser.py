@@ -3,7 +3,7 @@ import numpy as np
 
 class Noiser(object):
     def __init__(self):
-        self.real_noise = h5py.File('/Noise_L1_single.hdf5', 'r')
+        self.real_noise = h5py.File('data/Noise_L1_single.hdf5', 'r')
 
     def shift_single_wave(self, input):
         shift_index = np.random.randint(int(10), int(input.shape[0] * 0.06), size=1)[0]

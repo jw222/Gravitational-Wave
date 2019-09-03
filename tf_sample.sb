@@ -10,6 +10,4 @@
 #SBATCH --export=ALL
 #SBATCH -t 00:30:00
 
-module load ibm/powerai
-
 python3 train.py
