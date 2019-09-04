@@ -4,7 +4,7 @@
 #SBATCH --output="bbh.%j.%N.out"
 #SBATCH --error="bbh.%j.%N.err"
 #SBATCH --partition=gpux1
-#SBATCH --time=20
+#SBATCH --time=72
 
 module load powerai
 
