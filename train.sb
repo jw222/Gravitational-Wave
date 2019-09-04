@@ -4,10 +4,8 @@
 #SBATCH --output="bbh.%j.%N.out"
 #SBATCH --error="bbh.%j.%N.err"
 #SBATCH --partition=gpux1
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:v100:1
-#SBATCH --export=ALL
-#SBATCH -t 00:30:00
+#SBATCH --time=20
+
+module load powerai
 
 python3 train.py

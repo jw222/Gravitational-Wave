@@ -43,7 +43,7 @@ loss_hist = []
 val_loss = []
 #saver.restore(sess, "../model/shift.ckpt")
 
-num_epoch = 50
+num_epoch = 500
 start = datetime.datetime.now()
 batch_size = 64
 rate = 0.001
@@ -67,6 +67,10 @@ for i in range(num_epoch):
 
 end = datetime.datetime.now()
 print('time: '+str(end-start))
+
+#save model
+save_path = saver.save(sess, "../model/shift.ckpt")
+print("Model saved in path: %s" % save_path)
 
 def showplot(pred,name):
 	test_label = np.asarray(f_test['m1m2'])
