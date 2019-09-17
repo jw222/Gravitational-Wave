@@ -15,8 +15,7 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None):
 	noise = Noiser()
 
 	num_batch = NUM_DATA//k
-	snr = np.random.uniform(low=SNR,high=40.0,size=num_batch)
-	print(snr)
+	snr = np.random.uniform(low=SNR,high=1.5,size=num_batch)
 	for i in range(num_batch):
 		cur_batch = []
 		cur_label = []
@@ -40,7 +39,6 @@ def get_val(f,k,length=LENGTH,real_noise=False,SNR=None):
 	batch = []
 	label = []
 	idx = np.random.choice(f_test['WhitenedSignals'].shape[0], k, replace=False)
-	idx = [100]
 	noise = Noiser()
 
 	for i in range(k):

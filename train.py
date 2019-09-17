@@ -44,15 +44,14 @@ loss_hist = []
 val_loss = []
 #saver.restore(sess, "../model/shift.ckpt")
 
-num_epoch = 5000
+num_epoch = 3000
 start = datetime.datetime.now()
 batch_size = 64
 real_noise = False  #change here!
 rate = 0.001
+snrs = [2.0,1.5,1.0,0.5,0.3,0.2,0.1]
 for i in range(num_epoch):
-	snr = 40.0*math.exp(np.float64(i)*(-0.001))
-	if snr < 1.5:
-		snr = 1.5
+	snr = snrs[i//500]
 	# global_step.eval(session=sess)
 	train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)
 	for j in range(len(train_data)):
@@ -107,7 +106,7 @@ start = 0
 end = 8192
 
 noise = Noiser()
-snr = np.linspace(40.0,1.5,386)
+snr = np.linspace(3.0,0.1,300)
 m1s = []
 m2s = []
 for i in range(len(snr)):
