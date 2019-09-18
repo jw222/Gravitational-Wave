@@ -47,7 +47,7 @@ val_loss = []
 num_epoch = 3000
 start = datetime.datetime.now()
 batch_size = 64
-real_noise = False  #change here!
+real_noise = True  #change here!
 rate = 0.001
 snrs = [2.0,1.5,1.0,0.5,0.3,0.2,0.1]
 for i in range(num_epoch):

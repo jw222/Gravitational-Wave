@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name="bbh"
-#SBATCH --output="bbh.%j.%N.out"
-#SBATCH --error="bbh.%j.%N.err"
+#SBATCH --job-name="bbhR"
+#SBATCH --output="bbhR.%j.%N.out"
+#SBATCH --error="bbhR.%j.%N.err"
 #SBATCH --partition=gpux1
 #SBATCH --time=72
 
