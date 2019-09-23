@@ -102,3 +102,44 @@ def WaveNet(x):
 	out = tf.layers.dense(values, units=2, activation=tf.nn.relu)
 
 	return out
+
+def FixNet(x):
+	x = tf.layers.conv1d(
+		inputs=x,
+		filters=16,
+		kernel_size=16,
+		padding="causal")
+
+	x = tf.slice(x, [0,0,0], [-1,8177,-1])
+	x = tf.layers.max_pooling1d(x, 4, 4)
+	x = tf.nn.relu(x)
+
+	x = tf.layers.conv1d(
+		inputs=x,
+		filters=32,
+		kernel_size=8,
+		dilation_rate=4,
+		padding="causal")
+
+	x = tf.slice(x, [0,0,0], [-1,2016,-1])
+	x = tf.layers.max_pooling1d(x, 4, 4)
+	x = tf.nn.relu(x)
+
+	x = tf.layers.conv1d(
+		inputs=x,
+		filters=64,
+		kernel_size=8,
+		dilation_rate=4,
+		padding="causal")
+
+	x = tf.slice(x, [0,0,0], [-1,476,-1])
+	x = tf.layers.max_pooling1d(x, 4, 4)
+	x = tf.nn.relu(x)
+	print("hello!")
+	print(x)
+	y = tf.layers.flatten(x)
+	print(y)
+	y = tf.layers.dense(y, units=64, activation=tf.nn.relu)
+	y = tf.layers.dense(y, units=2)
+
+	return y

@@ -5,21 +5,21 @@ import h5py
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import math
+import sys
 from Noiser import Noiser
-from Net import WaveNet
+from Net import WaveNet, FixNet
 from Batch import get_batch, get_val
-
 
 f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
-tf.logging.set_verbosity(tf.logging.ERROR)
+#tf.logging.set_verbosity(tf.logging.ERROR)
 
-input_data = tf.placeholder(tf.float32, [None, None, 1])
+input_data = tf.placeholder(tf.float32, [None, 8192, 1])
 input_label = tf.placeholder(tf.int32, [None,2])
 feedlr = tf.placeholder(tf.float32)
 
 # loss function operations
-predictions = WaveNet(input_data)
+predictions = FixNet(input_data)
 loss = tf.losses.mean_squared_error(input_label, predictions)
 
 # train operation
@@ -34,7 +34,7 @@ optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 train_op = optimizer.minimize(
 	loss=loss,
 	global_step=global_step)
-
+sys.exit()
 #initialization
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
@@ -44,14 +44,14 @@ loss_hist = []
 val_loss = []
 #saver.restore(sess, "../model/shift.ckpt")
 
-num_epoch = 3000
+num_epoch = 150
 start = datetime.datetime.now()
 batch_size = 64
 real_noise = True  #change here!
 rate = 0.001
-snrs = [2.0,1.5,1.0,0.5,0.3,0.2,0.1]
+snrs = [5.0,3.0,2.0,1.5,1.2,1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1]
 for i in range(num_epoch):
-	snr = snrs[i//500]
+	snr = snrs[i//10]
 	# global_step.eval(session=sess)
 	train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)
 	for j in range(len(train_data)):
@@ -69,14 +69,12 @@ for i in range(num_epoch):
 	validation = sess.run(loss, feed_dict={input_data: val_data, input_label: val_label})
 	val_loss.append(validation)
 	print('iter num: '+str(i)+' snr: '+str(snr)+' loss: '+str(loss_hist[-1])+' val_loss: '+str(val_loss[-1]))
-	if i % 500 == 0:
-		saver.save(sess, '../model/'+str(real_noise)+'_Rnoise.ckpt', global_step=i)
 	
 end = datetime.datetime.now()
 print('time: '+str(end-start))
 
 #save model
-save_path = saver.save(sess, '../model/'+str(real_noise)+'_Rnoise.ckpt', global_step=num_epoch)
+save_path = saver.save(sess, '../model/test.ckpt', global_step=num_epoch)
 print("Model saved in path: %s" % save_path)
 
 def showplot(pred,name):
