@@ -81,30 +81,30 @@ def WaveNet(x):
 	# max pooling to get k outputs
 	#raw = tf.layers.max_pooling1d(raw, (LENGTH-receptive_field)//512, (LENGTH-receptive_field)//512)
 	#raw = tf.slice(raw, [0,0,0], [-1,512,-1])
-	
-    values = tf.layers.conv1d(
+
+	values = tf.layers.conv1d(
 			inputs=raw,
 			filters=16,
 			kernel_size=8,
 			padding="same",
 			activation=tf.nn.relu)
-    values = tf.layers.max_pooling1d(values, 8, 8)
-    
-    values = tf.layers.conv1d(
+	values = tf.layers.max_pooling1d(values, 8, 8)
+	
+	values = tf.layers.conv1d(
 			inputs=values,
 			filters=32,
 			kernel_size=8,
 			padding="same",
 			activation=tf.nn.relu)
-    values = tf.layers.max_pooling1d(values, 4, 4)
-    
-    values = tf.layers.conv1d(
+	values = tf.layers.max_pooling1d(values, 4, 4)
+	
+	values = tf.layers.conv1d(
 			inputs=values,
 			filters=1,
 			kernel_size=1,
 			padding="same")
-    
-    values = tf.layers.flatten(values)
+	
+	values = tf.layers.flatten(values)
 	
 	# get k-highest outputs
 	values, indices = tf.nn.top_k(values, 256, False)
