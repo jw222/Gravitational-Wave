@@ -44,14 +44,14 @@ loss_hist = []
 val_loss = []
 #saver.restore(sess, "../model/shift.ckpt")
 
-num_epoch = 3000
+num_epoch = 1000
 start = datetime.datetime.now()
 batch_size = 64
 real_noise = True  #change here!
 rate = 0.001
-snrs = [2.0,1.5,1.0,0.5,0.3,0.2,0.1]
+snrs = [2.0,1.5,1.2,1.1,1.0,0.9,0.8,0.8,0.7,0.7,0.6,0.6,0.5,0.5,0.5,0.4,0.4,0.4,0.4,0.4,0.3,0.3,0.3,0.3,0.3,0.3]
 for i in range(num_epoch):
-	snr = snrs[i//500]
+	snr = snrs[i//40]
 	# global_step.eval(session=sess)
 	train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)
 	for j in range(len(train_data)):
@@ -69,8 +69,8 @@ for i in range(num_epoch):
 	validation = sess.run(loss, feed_dict={input_data: val_data, input_label: val_label})
 	val_loss.append(validation)
 	print('iter num: '+str(i)+' snr: '+str(snr)+' loss: '+str(loss_hist[-1])+' val_loss: '+str(val_loss[-1]))
-	if i % 500 == 0:
-		saver.save(sess, '../model/'+str(real_noise)+'_Rnoise.ckpt', global_step=i)
+	#if i % 500 == 0:
+	#	saver.save(sess, '../model/'+str(real_noise)+'_Rnoise.ckpt', global_step=i)
 	
 end = datetime.datetime.now()
 print('time: '+str(end-start))

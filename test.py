@@ -34,7 +34,7 @@ optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 train_op = optimizer.minimize(
 	loss=loss,
 	global_step=global_step)
-sys.exit()
+
 #initialization
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
@@ -127,7 +127,7 @@ for i in range(len(snr)):
 	m2s.append(m2)
 	print('SNR: '+str(snr[i])+' -- m1: '+"{0:.5%}".format(m1)+' m2: '+"{0:.5%}".format(m2))
 	if i % 50 == 0:
-		showplot(pred,'SNR--'+str(snr[i]))
+		showplot(pred,'testSNR--'+str(snr[i]))
 
 m1s = np.asarray(m1s)
 m2s = np.asarray(m2s)
@@ -138,4 +138,4 @@ plt.legend(['m1','m2'], loc=1)
 plt.xlabel('SNR')
 plt.ylabel('Relative Error')
 plt.title('RE with SNR')
-plt.savefig(str(real_noise)+'SNR.png')
+plt.savefig('testSNR.png')

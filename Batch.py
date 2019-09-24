@@ -15,7 +15,10 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None):
 	noise = Noiser()
 
 	num_batch = NUM_DATA//k
-	snr = np.random.uniform(low=SNR,high=3.0,size=num_batch)
+	high = 3.0
+	if SNR is not None and SNR > high:
+		high = SNR
+	snr = np.random.uniform(low=SNR,high=high,size=num_batch)
 	for i in range(num_batch):
 		cur_batch = []
 		cur_label = []

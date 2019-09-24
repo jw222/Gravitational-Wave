@@ -81,15 +81,38 @@ def WaveNet(x):
 	# max pooling to get k outputs
 	#raw = tf.layers.max_pooling1d(raw, (LENGTH-receptive_field)//512, (LENGTH-receptive_field)//512)
 	#raw = tf.slice(raw, [0,0,0], [-1,512,-1])
-	raw = tf.layers.flatten(raw)
+	
+    values = tf.layers.conv1d(
+			inputs=raw,
+			filters=16,
+			kernel_size=8,
+			padding="same",
+			activation=tf.nn.relu)
+    values = tf.layers.max_pooling1d(values, 8, 8)
+    
+    values = tf.layers.conv1d(
+			inputs=values,
+			filters=32,
+			kernel_size=8,
+			padding="same",
+			activation=tf.nn.relu)
+    values = tf.layers.max_pooling1d(values, 4, 4)
+    
+    values = tf.layers.conv1d(
+			inputs=values,
+			filters=1,
+			kernel_size=1,
+			padding="same")
+    
+    values = tf.layers.flatten(values)
 	
 	# get k-highest outputs
-	values, indices = tf.nn.top_k(raw, 512, False)
+	values, indices = tf.nn.top_k(values, 256, False)
 	
-	values = tf.layers.dense(values, units=1024, activation=tf.nn.relu)
-	values = tf.layers.dropout(inputs=values, rate=0.2)
-	values = tf.layers.dense(values, units=128, activation=tf.nn.relu)
-	values = tf.layers.dropout(inputs=values, rate=0.2)
+	values = tf.layers.dense(values, units=64, activation=tf.nn.relu)
+	#values = tf.layers.dropout(inputs=values, rate=0.2)
+	#values = tf.layers.dense(values, units=128, activation=tf.nn.relu)
+	#values = tf.layers.dropout(inputs=values, rate=0.2)
 
 	#indices = tf.divide(tf.cast(indices, tf.float32), tf.cast(length, tf.float32))
 	#indices = tf.layers.dense(indices, units=128, activation=tf.nn.relu)
@@ -99,7 +122,7 @@ def WaveNet(x):
 	
 	#out = tf.multiply(tf.nn.sigmoid(indices), tf.nn.tanh(values))
 
-	out = tf.layers.dense(values, units=2, activation=tf.nn.relu)
+	out = tf.layers.dense(values, units=2)
 
 	return out
 
