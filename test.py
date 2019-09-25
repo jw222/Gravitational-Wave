@@ -5,7 +5,6 @@ import h5py
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import math
-import sys
 from Noiser import Noiser
 from Net import WaveNet, FixNet
 from Batch import get_batch, get_val
@@ -77,6 +76,17 @@ print('time: '+str(end-start))
 save_path = saver.save(sess, '../model/test.ckpt', global_step=num_epoch)
 print("Model saved in path: %s" % save_path)
 
+step = 9861//batch_size
+axis = np.arange(step-1, len(loss_hist), step)
+plt.figure()
+plt.plot(loss_hist)
+plt.scatter(axis, val_loss, c = 'red')
+plt.legend(['train_loss','val_loss'], loc=1)
+plt.title('loss history--total time: '+str(end-start))
+plt.xlabel('epochs')
+plt.ylabel('loss')
+plt.savefig('testLoss.png')
+
 def showplot(pred,name):
 	test_label = np.asarray(f_test['m1m2'])
 	error1 = [abs(pred.T[0][i]-test_label.T[0][i])/test_label.T[0][i] for i in range(len(test_label))]
@@ -132,8 +142,8 @@ for i in range(len(snr)):
 m1s = np.asarray(m1s)
 m2s = np.asarray(m2s)
 plt.figure()
-plt.plot(np.flip(snr, 0),m1s*100)
-plt.plot(np.flip(snr, 0),m2s*100)
+plt.plot(np.flip(snr, 0),np.flip(m1s*100, 0))
+plt.plot(np.flip(snr, 0),np.flip(m2s*100, 0))
 plt.legend(['m1','m2'], loc=1)
 plt.xlabel('SNR')
 plt.ylabel('Relative Error')
