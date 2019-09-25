@@ -88,15 +88,8 @@ def WaveNet(x):
 			kernel_size=8,
 			padding="same",
 			activation=tf.nn.relu)
-	values = tf.layers.max_pooling1d(values, 8, 8)
-	
-	values = tf.layers.conv1d(
-			inputs=values,
-			filters=32,
-			kernel_size=8,
-			padding="same",
-			activation=tf.nn.relu)
 	values = tf.layers.max_pooling1d(values, 4, 4)
+	
 	
 	values = tf.layers.conv1d(
 			inputs=values,
@@ -107,11 +100,12 @@ def WaveNet(x):
 	values = tf.layers.flatten(values)
 	
 	# get k-highest outputs
-	values, indices = tf.nn.top_k(values, 256, False)
+	#values, indices = tf.nn.top_k(values, 1024, False)
+	values = tf.slice(values, [0,0], [-1,1600])
 	
-	values = tf.layers.dense(values, units=64, activation=tf.nn.relu)
+	values = tf.layers.dense(values, units=128, activation=tf.nn.relu)
 	#values = tf.layers.dropout(inputs=values, rate=0.2)
-	#values = tf.layers.dense(values, units=128, activation=tf.nn.relu)
+	values = tf.layers.dense(values, units=64, activation=tf.nn.relu)
 	#values = tf.layers.dropout(inputs=values, rate=0.2)
 
 	#indices = tf.divide(tf.cast(indices, tf.float32), tf.cast(length, tf.float32))
@@ -126,43 +120,54 @@ def WaveNet(x):
 
 	return out
 
+
 def FixNet(x):
 	x = tf.layers.conv1d(
 		inputs=x,
-		filters=16,
-		kernel_size=16,
-		padding="causal")
-
-	x = tf.slice(x, [0,0,0], [-1,8177,-1])
-	x = tf.layers.max_pooling1d(x, 4, 4)
-	x = tf.nn.relu(x)
-
-	x = tf.layers.conv1d(
-		inputs=x,
-		filters=32,
-		kernel_size=8,
-		dilation_rate=4,
-		padding="causal")
-
-	x = tf.slice(x, [0,0,0], [-1,2016,-1])
-	x = tf.layers.max_pooling1d(x, 4, 4)
-	x = tf.nn.relu(x)
-
-	x = tf.layers.conv1d(
-		inputs=x,
 		filters=64,
-		kernel_size=8,
-		dilation_rate=4,
-		padding="causal")
+		kernel_size=16,
+		padding="valid")
 
-	x = tf.slice(x, [0,0,0], [-1,476,-1])
 	x = tf.layers.max_pooling1d(x, 4, 4)
 	x = tf.nn.relu(x)
-	print("hello!")
-	print(x)
+
+	x = tf.layers.conv1d(
+		inputs=x,
+		filters=128,
+		kernel_size=16,
+		dilation_rate=2,
+		padding="valid")
+
+	x = tf.layers.max_pooling1d(x, 4, 4)
+	x = tf.nn.relu(x)
+
+	x = tf.layers.conv1d(
+		inputs=x,
+		filters=256,
+		kernel_size=16,
+		dilation_rate=2,
+		padding="valid")
+
+	x = tf.layers.max_pooling1d(x, 4, 4)
+	x = tf.nn.relu(x)
+    
+	x = tf.layers.conv1d(
+		inputs=x,
+		filters=512,
+		kernel_size=32,
+		dilation_rate=2,
+		padding="valid")
+
+	x = tf.layers.max_pooling1d(x, 4, 4)
+	x = tf.nn.relu(x)
+
 	y = tf.layers.flatten(x)
-	print(y)
+
+	y = tf.layers.dense(y, units=128, activation=tf.nn.relu)
+	y = tf.layers.dropout(inputs=y, rate=0.25)
 	y = tf.layers.dense(y, units=64, activation=tf.nn.relu)
 	y = tf.layers.dense(y, units=2)
 
 	return y
+
+

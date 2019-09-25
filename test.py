@@ -12,7 +12,7 @@ from Batch import get_batch, get_val
 
 f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
-#tf.logging.set_verbosity(tf.logging.ERROR)
+tf.logging.set_verbosity(tf.logging.ERROR)
 
 input_data = tf.placeholder(tf.float32, [None, 8192, 1])
 input_label = tf.placeholder(tf.int32, [None,2])
@@ -30,7 +30,7 @@ learning_rate = tf.train.exponential_decay(learning_rate=0.001,
 										   decay_rate=0.96, 
 										   staircase=True)
 
-optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
 train_op = optimizer.minimize(
 	loss=loss,
 	global_step=global_step)
@@ -44,14 +44,14 @@ loss_hist = []
 val_loss = []
 #saver.restore(sess, "../model/shift.ckpt")
 
-num_epoch = 150
+num_epoch = 1000
 start = datetime.datetime.now()
 batch_size = 64
-real_noise = True  #change here!
+real_noise = False  #change here!
 rate = 0.001
-snrs = [5.0,3.0,2.0,1.5,1.2,1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1]
+snrs = [5.0,4.0,3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1]
 for i in range(num_epoch):
-	snr = snrs[i//10]
+	snr = snrs[i//50]
 	# global_step.eval(session=sess)
 	train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)
 	for j in range(len(train_data)):
