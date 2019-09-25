@@ -2,7 +2,7 @@ import tensorflow as tf
 
 #print(receptive_field)
 
-def WaveNet(x):
+def WaveNet(x, train=True):
 	dilation_rates = [2**i for i in range(10)]
 	receptive_field = sum(dilation_rates)+2
 	# preprocessing causal layer
@@ -103,10 +103,12 @@ def WaveNet(x):
 	#values, indices = tf.nn.top_k(values, 1024, False)
 	values = tf.slice(values, [0,0], [-1,7000])
 	
+	values = tf.layers.dense(values, units=1024, activation=tf.nn.relu)
+	if train is True:
+		values = tf.layers.dropout(inputs=values, rate=0.25)
 	values = tf.layers.dense(values, units=128, activation=tf.nn.relu)
-	values = tf.layers.dropout(inputs=values, rate=0.25)
-	values = tf.layers.dense(values, units=64, activation=tf.nn.relu)
-	values = tf.layers.dropout(inputs=values, rate=0.25)
+	if train is True:
+		values = tf.layers.dropout(inputs=values, rate=0.25)
 
 	#indices = tf.divide(tf.cast(indices, tf.float32), tf.cast(length, tf.float32))
 	#indices = tf.layers.dense(indices, units=128, activation=tf.nn.relu)
@@ -121,7 +123,7 @@ def WaveNet(x):
 	return out
 
 
-def FixNet(x):
+def FixNet(x, train=True):
 	x = tf.layers.conv1d(
 		inputs=x,
 		filters=64,
@@ -164,7 +166,8 @@ def FixNet(x):
 	y = tf.layers.flatten(x)
 
 	y = tf.layers.dense(y, units=128, activation=tf.nn.relu)
-	y = tf.layers.dropout(inputs=y, rate=0.5)
+	if train is True:
+		y = tf.layers.dropout(inputs=y, rate=0.5)
 	y = tf.layers.dense(y, units=64, activation=tf.nn.relu)
 	y = tf.layers.dense(y, units=2)
 

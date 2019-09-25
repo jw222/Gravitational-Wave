@@ -15,10 +15,11 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 
 input_data = tf.placeholder(tf.float32, [None, 8192, 1])
 input_label = tf.placeholder(tf.int32, [None,2])
-feedlr = tf.placeholder(tf.float32)
+#feedlr = tf.placeholder(tf.float32)
+trainable = tf.placeholder(tf.bool)
 
 # loss function operations
-predictions = FixNet(input_data)
+predictions = FixNet(input_data, trainable)
 loss = tf.losses.mean_squared_error(input_label, predictions)
 
 # train operation
@@ -59,13 +60,13 @@ for i in range(num_epoch):
 		_, loss_val = sess.run([train_op, loss],
 						   feed_dict={input_data: cur_data,
 									  input_label: cur_label,
-									  feedlr: rate})
+									  trainable: True})
 		loss_hist.append(loss_val)
 		if j % 10 == 0:
 			print('loss: '+str(loss_hist[-1]))
 	
 	val_data, val_label = get_val(f_test, batch_size, real_noise=real_noise, SNR=snr)
-	validation = sess.run(loss, feed_dict={input_data: val_data, input_label: val_label})
+	validation = sess.run(loss, feed_dict={input_data: val_data, input_label: val_label, trainable: False})
 	val_loss.append(validation)
 	print('iter num: '+str(i)+' snr: '+str(snr)+' loss: '+str(loss_hist[-1])+' val_loss: '+str(val_loss[-1]))
 	
@@ -128,7 +129,7 @@ for i in range(len(snr)):
 			test_data = noise.add_real_noise(input=test_data, SNR=snr[i])
 		test_data = test_data.reshape(1,end-start,1)
 		test_label = f_test['m1m2'][j].reshape(1,2)
-		pred.append(sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label})[0])
+		pred.append(sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label, trainable: False})[0])
 	pred = np.asarray(pred)
 	test_label = np.asarray(f_test['m1m2'])
 	m1 = np.mean(np.divide(abs(pred.T[0]-test_label.T[0]),test_label.T[0]))
