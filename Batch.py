@@ -7,7 +7,7 @@ f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 
 NUM_DATA = f_train['WhitenedSignals'].shape[0]
 LENGTH = f_train['WhitenedSignals'].shape[1]
-def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None): 
+def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None): 
 	batch = []
 	label = []
 	idx = np.arange(NUM_DATA)
@@ -31,6 +31,9 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None):
 				cur_batch = noise.add_noise(input=cur_batch, SNR=snr[i])
 			else:
 				cur_batch = noise.add_real_noise(input=cur_batch, SNR=snr[i])
+		if shift is not None:
+			cur_batch.T[:shift[0]] = 0
+			cur_batch.T[shift[1]:] = 0
 		batch.append(cur_batch)
 		label.append(cur_label) 
 		
