@@ -81,7 +81,7 @@ def WaveNet(x, train=True):
 	# max pooling to get k outputs
 	#raw = tf.layers.max_pooling1d(raw, (LENGTH-receptive_field)//512, (LENGTH-receptive_field)//512)
 	#raw = tf.slice(raw, [0,0,0], [-1,512,-1])
-'''
+	'''
 	values = tf.layers.conv1d(
 			inputs=raw,
 			filters=16,
@@ -96,8 +96,8 @@ def WaveNet(x, train=True):
 			filters=1,
 			kernel_size=1,
 			padding="same")
-'''	
-	values = tf.layers.flatten(values)
+	'''	
+	values = tf.layers.flatten(raw)
 	
 	# get k-highest outputs
 	#values, indices = tf.nn.top_k(values, 1024, False)
@@ -105,10 +105,10 @@ def WaveNet(x, train=True):
 	
 	values = tf.layers.dense(values, units=1024, activation=tf.nn.relu)
 	if train is True:
-		values = tf.layers.dropout(inputs=values, rate=0.25)
+		values = tf.layers.dropout(inputs=values, rate=0.15)
 	values = tf.layers.dense(values, units=128, activation=tf.nn.relu)
 	if train is True:
-		values = tf.layers.dropout(inputs=values, rate=0.25)
+		values = tf.layers.dropout(inputs=values, rate=0.15)
 
 	#indices = tf.divide(tf.cast(indices, tf.float32), tf.cast(length, tf.float32))
 	#indices = tf.layers.dense(indices, units=128, activation=tf.nn.relu)
@@ -166,8 +166,8 @@ def FixNet(x, train=True):
 	y = tf.layers.flatten(x)
 
 	y = tf.layers.dense(y, units=128, activation=tf.nn.relu)
-	if train is True:
-		y = tf.layers.dropout(inputs=y, rate=0.5)
+	#if train is True:
+	#	y = tf.layers.dropout(inputs=y, rate=0.25)
 	y = tf.layers.dense(y, units=64, activation=tf.nn.relu)
 	y = tf.layers.dense(y, units=2)
 

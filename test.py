@@ -5,9 +5,13 @@ import h5py
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import math
+import sys
 from Noiser import Noiser
 from Net import WaveNet, FixNet
 from Batch import get_batch, get_val
+
+stdoutOrigin=sys.stdout 
+sys.stdout = open("testOut1.txt", "w")
 
 f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
@@ -38,20 +42,22 @@ train_op = optimizer.minimize(
 #initialization
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
-sess = tf.Session()
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.Session(config=config)
 sess.run(init)
 loss_hist = []
 val_loss = []
 #saver.restore(sess, "../model/shift.ckpt")
 
-num_epoch = 1000
+num_epoch = 500
 start = datetime.datetime.now()
 batch_size = 64
 real_noise = False  #change here!
 rate = 0.001
-snrs = [5.0,4.0,3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1]
+snrs = [3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7,0.6,0.6,0.5,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1]
 for i in range(num_epoch):
-	snr = snrs[i//50]
+	snr = snrs[i//20]
 	# global_step.eval(session=sess)
 	train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)
 	for j in range(len(train_data)):
@@ -115,7 +121,7 @@ start = 0
 end = 8192
 
 noise = Noiser()
-snr = np.linspace(3.0,0.1,300)
+snr = np.linspace(5.0,0.1,250)
 m1s = []
 m2s = []
 for i in range(len(snr)):

@@ -5,10 +5,13 @@ import h5py
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import math
+import sys
 from Noiser import Noiser
 from Net import WaveNet
 from Batch import get_batch, get_val
 
+stdoutOrigin=sys.stdout 
+sys.stdout = open("trainOut1.txt", "w")
 
 f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
@@ -39,12 +42,14 @@ train_op = optimizer.minimize(
 #initialization
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
-sess = tf.Session()
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.Session(config=config)
 sess.run(init)
 loss_hist = []
 val_loss = []
 #saver.restore(sess, "../model/shift.ckpt")
-
+print('-------------IS_GPU_AVAILABLE-----'+str(tf.test.is_gpu_available())+'----------------')
 num_epoch = 1000
 start = datetime.datetime.now()
 batch_size = 64
