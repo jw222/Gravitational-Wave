@@ -174,3 +174,111 @@ def FixNet(x, train=True):
 	return y
 
 
+def FixNet2(x, train=True):
+	ratio = 8
+
+	# Three conv1d layers
+	def conv1ds(x):
+		x = tf.layers.conv1d(
+			inputs=x,
+			filters=64,
+			kernel_size=16,
+			dilation_rate=2,
+			padding="valid",
+			activation=tf.nn.relu)
+
+		x = tf.layers.max_pooling1d(x, 4, 4)
+		x = tf.nn.relu(x)
+
+		x = tf.layers.conv1d(
+			inputs=x,
+			filters=128,
+			kernel_size=16,
+			dilation_rate=2,
+			padding="valid",
+			activation=tf.nn.relu)
+
+		x = tf.layers.max_pooling1d(x, 4, 4)
+		x = tf.nn.relu(x)
+
+		x = tf.layers.conv1d(
+			inputs=x,
+			filters=128,
+			kernel_size=16,
+			dilation_rate=2,
+			padding="valid",
+			activation=tf.nn.relu)
+
+		x = tf.layers.max_pooling1d(x, 4, 4)
+		x = tf.nn.relu(x)
+
+		return x
+	
+	# SE layers
+	def SELayer(residual):
+		m = tf.reduce_mean(residual, [1])
+		m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
+		m = tf.layers.dense(m, units=128, activation=tf.nn.sigmoid)
+		m = m * residual
+		residual = residual + m
+
+		m = tf.reduce_mean(residual, [1])
+		m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
+		m = tf.layers.dense(m, units=128, activation=tf.nn.sigmoid)
+		m = m * residual
+		residual = residual + m
+
+		m = tf.reduce_mean(residual, [1])
+		m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
+		m = tf.layers.dense(m, units=128, activation=tf.nn.sigmoid)
+		m = m * residual
+		residual = residual + m
+
+	# Highway
+	def highway(x):
+		for i in range(30):
+			h = tf.layers.conv1d(
+				inputs=x,
+				filters=128,
+				kernel_size=4,
+				stride=2
+				padding="valid",
+				activation=tf.nn.relu)
+			t = tf.layers.conv1d(
+				inputs=x,
+				filters=128,
+				kernel_size=4,
+				stride=2
+				padding="valid",
+				activation=tf.nn.sigmoid)
+
+			x = h * t + (1 - t) * x
+
+		return x
+
+	# Main layers
+	x = conv1ds(x)
+
+	residual1 = x
+	residual2 = x
+	for i in range(3):
+		residual1 = SELayer(residual1)
+		residual2 = SELayer(residual2)
+
+	m1 = highway(residual1)
+	m2 = highway(residual2)
+
+	m1 = tf.layers.flatten(m1)
+	m1 = tf.layers.dense(m1, 512, activation=tf.nn.relu)
+	m1 = tf.layers.dense(m1, 256)
+	m1 = tf.layers.dense(m1, 1, activation=tf.nn.relu)
+
+	m2 = tf.layers.flatten(m2)
+	m2 = tf.layers.dense(m2, 512, activation=tf.nn.relu)
+	m2 = tf.layers.dense(m2, 256)
+	m2 = tf.layers.dense(m2, 1, activation=tf.nn.relu)
+
+	return (m1, m2)
+
+
+

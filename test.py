@@ -23,7 +23,7 @@ input_label = tf.placeholder(tf.int32, [None,2])
 trainable = tf.placeholder(tf.bool)
 
 # loss function operations
-predictions = FixNet(input_data, trainable)
+predictions = FixNet2(input_data, trainable)
 loss = tf.losses.mean_squared_error(input_label, predictions)
 
 # train operation
@@ -163,5 +163,5 @@ def plot(sess, snrs, f_test, fig, shift=None):
 	plt.savefig(fig+'.png')
 
 snrs = np.linspace(5.0,0.1,249)
-plot(sess, snrs, f_test, '0.7-0.9s', shift=[int(8192*0.7), int(8192*0.9)])
+#plot(sess, snrs, f_test, '0.7-0.9s', shift=[int(8192*0.7), int(8192*0.9)])
 plot(sess, snrs, f_test, '0.0-1.0s')
