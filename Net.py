@@ -241,14 +241,14 @@ def FixNet2(x, train=True):
 				inputs=x,
 				filters=128,
 				kernel_size=4,
-				stride=2
+				stride=2,
 				padding="valid",
 				activation=tf.nn.relu)
 			t = tf.layers.conv1d(
 				inputs=x,
 				filters=128,
 				kernel_size=4,
-				stride=2
+				stride=2,
 				padding="valid",
 				activation=tf.nn.sigmoid)
 
