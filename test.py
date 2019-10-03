@@ -7,7 +7,7 @@ import matplotlib.colors as colors
 import math
 import sys
 from Noiser import Noiser
-from Net import WaveNet, FixNet
+from Net import WaveNet, FixNet, FixNet2
 from Batch import get_batch, get_val
 
 stdoutOrigin=sys.stdout 
@@ -68,6 +68,7 @@ for i in range(num_epoch):
 									  input_label: cur_label,
 									  trainable: True})
 		loss_hist.append(loss_val)
+		SystemExit
 		if j % 10 == 0:
 			print('loss: '+str(loss_hist[-1]))
 	

@@ -174,7 +174,7 @@ def FixNet(x, train=True):
 	return y
 
 
-def FixNet2(x, train=True):
+def FixNet2(input, train=True):
 	ratio = 8
 
 	# Three conv1d layers
@@ -215,7 +215,8 @@ def FixNet2(x, train=True):
 		return x
 	
 	# SE layers
-	def SELayer(residual):
+	def SELayer(x):
+		residual = x
 		m = tf.reduce_mean(residual, [1])
 		m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
 		m = tf.layers.dense(m, units=128, activation=tf.nn.sigmoid)
@@ -233,23 +234,24 @@ def FixNet2(x, train=True):
 		m = tf.layers.dense(m, units=128, activation=tf.nn.sigmoid)
 		m = m * residual
 		residual = residual + m
+
+		return residual
 
 	# Highway
 	def highway(x):
+		print(x)
 		for i in range(30):
 			h = tf.layers.conv1d(
 				inputs=x,
 				filters=128,
 				kernel_size=4,
-				stride=2,
-				padding="valid",
+				padding="same",
 				activation=tf.nn.relu)
 			t = tf.layers.conv1d(
 				inputs=x,
 				filters=128,
 				kernel_size=4,
-				stride=2,
-				padding="valid",
+				padding="same",
 				activation=tf.nn.sigmoid)
 
 			x = h * t + (1 - t) * x
@@ -257,14 +259,16 @@ def FixNet2(x, train=True):
 		return x
 
 	# Main layers
-	x = conv1ds(x)
+	input = conv1ds(input)
+	print("hello is: ",input)
 
-	residual1 = x
-	residual2 = x
+	residual1 = input
+	residual2 = input
 	for i in range(3):
 		residual1 = SELayer(residual1)
 		residual2 = SELayer(residual2)
-
+	print(residual1)
+	print(residual2)
 	m1 = highway(residual1)
 	m2 = highway(residual2)
 
@@ -278,7 +282,7 @@ def FixNet2(x, train=True):
 	m2 = tf.layers.dense(m2, 256)
 	m2 = tf.layers.dense(m2, 1, activation=tf.nn.relu)
 
-	return (m1, m2)
+	return tf.concat([m1, m2], 1)
 
 
 
