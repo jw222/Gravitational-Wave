@@ -239,7 +239,6 @@ def FixNet2(input, train=True):
 
 	# Highway
 	def highway(x):
-		print(x)
 		for i in range(30):
 			h = tf.layers.conv1d(
 				inputs=x,
@@ -260,26 +259,28 @@ def FixNet2(input, train=True):
 
 	# Main layers
 	input = conv1ds(input)
-	print("hello is: ",input)
 
 	residual1 = input
 	residual2 = input
 	for i in range(3):
 		residual1 = SELayer(residual1)
 		residual2 = SELayer(residual2)
-	print(residual1)
-	print(residual2)
+
 	m1 = highway(residual1)
 	m2 = highway(residual2)
 
 	m1 = tf.layers.flatten(m1)
 	m1 = tf.layers.dense(m1, 512, activation=tf.nn.relu)
+	m1 = tf.layers.dropout(inputs=m1, rate=0.1)
 	m1 = tf.layers.dense(m1, 256)
+	m1 = tf.layers.dropout(inputs=m1, rate=0.1)
 	m1 = tf.layers.dense(m1, 1, activation=tf.nn.relu)
 
 	m2 = tf.layers.flatten(m2)
 	m2 = tf.layers.dense(m2, 512, activation=tf.nn.relu)
+	m2 = tf.layers.dropout(inputs=m2, rate=0.1)
 	m2 = tf.layers.dense(m2, 256)
+	m2 = tf.layers.dropout(inputs=m2, rate=0.1)
 	m2 = tf.layers.dense(m2, 1, activation=tf.nn.relu)
 
 	return tf.concat([m1, m2], 1)

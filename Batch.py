@@ -53,7 +53,6 @@ def get_val(f,k,length=LENGTH,real_noise=False,SNR=None):
 
 	if SNR is not None:
 		snr = np.random.uniform(low=SNR,high=SNR,size=1)[0]            
-		print(snr)
 		if real_noise is False:
 			batch = noise.add_noise(input=batch, SNR=snr)
 		else:

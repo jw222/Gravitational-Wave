@@ -10,8 +10,8 @@ from Noiser import Noiser
 from Net import WaveNet, FixNet, FixNet2
 from Batch import get_batch, get_val
 
-stdoutOrigin=sys.stdout 
-sys.stdout = open("testOut1.txt", "w")
+#stdoutOrigin=sys.stdout 
+#sys.stdout = open("testOut1.txt", "w")
 
 f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
@@ -58,8 +58,7 @@ rate = 0.001
 snrs = [3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7,0.6,0.6,0.5,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1]
 for i in range(num_epoch):
 	snr = snrs[i//20]
-	# global_step.eval(session=sess)
-	train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr, shift=[int(8192*0.7), int(8192*0.9)])
+	train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)
 	for j in range(len(train_data)):
 		cur_data = train_data[j]
 		cur_label = train_label[j]
@@ -68,7 +67,6 @@ for i in range(num_epoch):
 									  input_label: cur_label,
 									  trainable: True})
 		loss_hist.append(loss_val)
-		SystemExit
 		if j % 10 == 0:
 			print('loss: '+str(loss_hist[-1]))
 	
