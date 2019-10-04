@@ -12,8 +12,9 @@ from Batch import get_batch, get_val
 import os
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
-#stdoutOrigin=sys.stdout 
-#sys.stdout = open("testOut1.txt", "w")
+if len(sys.argv) > 1 and sys.argv[1] == "file":
+	stdoutOrigin=sys.stdout 
+	sys.stdout = open("testOut1.txt", "w")
 
 f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
@@ -25,18 +26,18 @@ input_label = tf.placeholder(tf.int32, [None,2])
 trainable = tf.placeholder(tf.bool)
 
 # loss function operations
-predictions = FixNet(input_data, trainable)
+predictions = FixNet2(input_data, trainable)
 loss = tf.losses.mean_squared_error(input_label, predictions)
 
 # train operation
 global_step = tf.Variable(0, trainable=False)
-learning_rate = tf.train.exponential_decay(learning_rate=0.01, 
+learning_rate = tf.train.exponential_decay(learning_rate=0.0001, 
 										   global_step=global_step, 
 										   decay_steps=9861//64, 
 										   decay_rate=0.96, 
 										   staircase=True)
 
-optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+optimizer = tf.train.AdamOptimizer(learning_rate=0.0001)
 train_op = optimizer.minimize(
 	loss=loss,
 	global_step=global_step)
@@ -57,7 +58,7 @@ start = datetime.datetime.now()
 batch_size = 64
 real_noise = False  #change here!
 rate = 0.001
-snrs = [3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7,0.6,0.6,0.5,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1]
+snrs = [5.0,4.0,3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1]
 for i in range(num_epoch):
 	snr = snrs[i//20]
 	train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)

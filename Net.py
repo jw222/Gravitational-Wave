@@ -190,8 +190,7 @@ def FixNet2(input, train=True):
 			filters=64,
 			kernel_size=16,
 			dilation_rate=2,
-			padding="valid",
-			activation=tf.nn.relu)
+			padding="valid")
 
 		x = tf.layers.max_pooling1d(x, 4, 4)
 		x = tf.nn.relu(x)
@@ -201,8 +200,7 @@ def FixNet2(input, train=True):
 			filters=128,
 			kernel_size=16,
 			dilation_rate=2,
-			padding="valid",
-			activation=tf.nn.relu)
+			padding="valid")
 
 		x = tf.layers.max_pooling1d(x, 4, 4)
 		x = tf.nn.relu(x)
@@ -212,8 +210,7 @@ def FixNet2(input, train=True):
 			filters=128,
 			kernel_size=16,
 			dilation_rate=2,
-			padding="valid",
-			activation=tf.nn.relu)
+			padding="valid")
 
 		x = tf.layers.max_pooling1d(x, 4, 4)
 		x = tf.nn.relu(x)
@@ -272,21 +269,21 @@ def FixNet2(input, train=True):
 	m1 = residual1
 	m2 = residual2
 
-	for i in range(10):
-		m1 = highway(m1)
-		m2 = highway(m2)
+	#for i in range(30):
+	m1 = highway(m1)
+	m2 = highway(m2)
 
 	m1 = tf.layers.flatten(m1)
 	m1 = tf.layers.dense(m1, 512, activation=tf.nn.relu)
 	m1 = tf.layers.dropout(inputs=m1, rate=0.1)
-	m1 = tf.layers.dense(m1, 256)
+	m1 = tf.layers.dense(m1, 256, activation=tf.nn.relu)
 	m1 = tf.layers.dropout(inputs=m1, rate=0.1)
 	m1 = tf.layers.dense(m1, 1, activation=tf.nn.relu)
 
 	m2 = tf.layers.flatten(m2)
 	m2 = tf.layers.dense(m2, 512, activation=tf.nn.relu)
 	m2 = tf.layers.dropout(inputs=m2, rate=0.1)
-	m2 = tf.layers.dense(m2, 256)
+	m2 = tf.layers.dense(m2, 256, activation=tf.nn.relu)
 	m2 = tf.layers.dropout(inputs=m2, rate=0.1)
 	m2 = tf.layers.dense(m2, 1, activation=tf.nn.relu)
 
