@@ -30,13 +30,13 @@ loss = tf.losses.mean_squared_error(input_label, predictions)
 
 # train operation
 global_step = tf.Variable(0, trainable=False)
-learning_rate = tf.train.exponential_decay(learning_rate=0.001, 
+learning_rate = tf.train.exponential_decay(learning_rate=0.01, 
 										   global_step=global_step, 
 										   decay_steps=9861//64, 
 										   decay_rate=0.96, 
 										   staircase=True)
 
-optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
+optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 train_op = optimizer.minimize(
 	loss=loss,
 	global_step=global_step)
