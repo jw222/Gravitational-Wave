@@ -9,9 +9,11 @@ import sys
 from Noiser import Noiser
 from Net import WaveNet
 from Batch import get_batch, get_val
+import os
+os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
-stdoutOrigin=sys.stdout 
-sys.stdout = open("trainOut1.txt", "w")
+#stdoutOrigin=sys.stdout 
+#sys.stdout = open("trainOut1.txt", "w")
 
 f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")

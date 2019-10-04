@@ -239,7 +239,7 @@ def FixNet2(input, train=True):
 
 	# Highway
 	def highway(x):
-		for i in range(30):
+		for i in range(5):
 			h = tf.layers.conv1d(
 				inputs=x,
 				filters=128,
@@ -262,9 +262,8 @@ def FixNet2(input, train=True):
 
 	residual1 = input
 	residual2 = input
-	for i in range(3):
-		residual1 = SELayer(residual1)
-		residual2 = SELayer(residual2)
+	residual1 = SELayer(residual1)
+	residual2 = SELayer(residual2)
 
 	m1 = highway(residual1)
 	m2 = highway(residual2)

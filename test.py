@@ -9,6 +9,8 @@ import sys
 from Noiser import Noiser
 from Net import WaveNet, FixNet, FixNet2
 from Batch import get_batch, get_val
+import os
+os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
 #stdoutOrigin=sys.stdout 
 #sys.stdout = open("testOut1.txt", "w")
