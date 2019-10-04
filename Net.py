@@ -217,19 +217,19 @@ def FixNet2(input, train=True):
 	# SE layers
 	def SELayer(x):
 		residual = x
-		m = tf.reduce_mean(residual, [1])
+		m = tf.reduce_mean(residual, [1], keepdims=True)
 		m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
 		m = tf.layers.dense(m, units=128, activation=tf.nn.sigmoid)
 		m = m * residual
 		residual = residual + m
 
-		m = tf.reduce_mean(residual, [1])
+		m = tf.reduce_mean(residual, [1], keepdims=True)
 		m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
 		m = tf.layers.dense(m, units=128, activation=tf.nn.sigmoid)
 		m = m * residual
 		residual = residual + m
 
-		m = tf.reduce_mean(residual, [1])
+		m = tf.reduce_mean(residual, [1], keepdims=True)
 		m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
 		m = tf.layers.dense(m, units=128, activation=tf.nn.sigmoid)
 		m = m * residual
