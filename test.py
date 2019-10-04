@@ -25,7 +25,7 @@ input_label = tf.placeholder(tf.int32, [None,2])
 trainable = tf.placeholder(tf.bool)
 
 # loss function operations
-predictions = FixNet2(input_data, trainable)
+predictions = FixNet(input_data, trainable)
 loss = tf.losses.mean_squared_error(input_label, predictions)
 
 # train operation
