@@ -22,7 +22,6 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 
 input_data = tf.placeholder(tf.float32, [None, 8192, 1])
 input_label = tf.placeholder(tf.int32, [None,2])
-#feedlr = tf.placeholder(tf.float32)
 trainable = tf.placeholder(tf.bool)
 
 # loss function operations
@@ -57,7 +56,6 @@ num_epoch = 500
 start = datetime.datetime.now()
 batch_size = 64
 real_noise = False  #change here!
-rate = 0.001
 snrs = [5.0,4.0,3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1]
 for i in range(num_epoch):
 	snr = snrs[i//20]
@@ -150,8 +148,8 @@ def plot(sess, snrs, f_test, fig, shift=None):
 		m1s.append(m1)
 		m2s.append(m2)
 		print('SNR: '+str(snrs[i])+' -- m1: '+"{0:.5%}".format(m1)+' m2: '+"{0:.5%}".format(m2))
-		if i % 50 == 0:
-			showplot(pred,'testSNR--'+fig+str(snrs[i]))
+		#if i % 51 == 0:
+		#	showplot(pred,'testSNR--'+fig+str(snrs[i]))
 
 	m1s = np.asarray(m1s)
 	m2s = np.asarray(m2s)
@@ -165,5 +163,8 @@ def plot(sess, snrs, f_test, fig, shift=None):
 	plt.savefig(fig+'.png')
 
 snrs = np.linspace(5.0,0.1,249)
-#plot(sess, snrs, f_test, '0.7-0.9s', shift=[int(8192*0.7), int(8192*0.9)])
+plot(sess, snrs, f_test, '0.5-1.0s', shift=[int(8192*0.5), int(8192*1.0)])
+plot(sess, snrs, f_test, '0.0-0.5s', shift=[int(8192*0.0), int(8192*0.5)])
+plot(sess, snrs, f_test, '0.5-0.9s', shift=[int(8192*0.5), int(8192*0.9)])
+plot(sess, snrs, f_test, '0.6-0.9s', shift=[int(8192*0.6), int(8192*0.9)])
 plot(sess, snrs, f_test, '0.0-1.0s')

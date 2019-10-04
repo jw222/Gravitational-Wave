@@ -124,61 +124,53 @@ def WaveNet(x, train=True):
 
 
 def FixNet(x, train=True):
-	def SubNet(x):
-		x = tf.layers.conv1d(
-			inputs=x,
-			filters=64,
-			kernel_size=16,
-			padding="valid")
+	x = tf.layers.conv1d(
+		inputs=x,
+		filters=64,
+		kernel_size=16,
+		padding="valid")
+	x = tf.layers.max_pooling1d(x, 4, 4)
+	x = tf.nn.relu(x)
 
-		x = tf.layers.max_pooling1d(x, 4, 4)
-		x = tf.nn.relu(x)
+	x = tf.layers.conv1d(
+		inputs=x,
+		filters=128,
+		kernel_size=16,
+		dilation_rate=2,
+		padding="valid")
 
-		x = tf.layers.conv1d(
-			inputs=x,
-			filters=128,
-			kernel_size=16,
-			dilation_rate=2,
-			padding="valid")
+	x = tf.layers.max_pooling1d(x, 4, 4)
+	x = tf.nn.relu(x)
 
-		x = tf.layers.max_pooling1d(x, 4, 4)
-		x = tf.nn.relu(x)
+	x = tf.layers.conv1d(
+		inputs=x,
+		filters=256,
+		kernel_size=16,
+		dilation_rate=2,
+		padding="valid")
 
-		x = tf.layers.conv1d(
-			inputs=x,
-			filters=256,
-			kernel_size=16,
-			dilation_rate=2,
-			padding="valid")
+	x = tf.layers.max_pooling1d(x, 4, 4)
+	x = tf.nn.relu(x)
+    
+	x = tf.layers.conv1d(
+		inputs=x,
+		filters=512,
+		kernel_size=32,
+		dilation_rate=2,
+		padding="valid")
 
-		x = tf.layers.max_pooling1d(x, 4, 4)
-		x = tf.nn.relu(x)
-	    
-		x = tf.layers.conv1d(
-			inputs=x,
-			filters=512,
-			kernel_size=32,
-			dilation_rate=2,
-			padding="valid")
+	x = tf.layers.max_pooling1d(x, 4, 4)
+	x = tf.nn.relu(x)
 
-		x = tf.layers.max_pooling1d(x, 4, 4)
-		x = tf.nn.relu(x)
+	y = tf.layers.flatten(x)
 
-		y = tf.layers.flatten(x)
-
-		y = tf.layers.dense(y, units=128, activation=tf.nn.relu)
-		#if train is True:
+	y = tf.layers.dense(y, units=128, activation=tf.nn.relu)
+	#if train is True:
 		#	y = tf.layers.dropout(inputs=y, rate=0.25)
-		y = tf.layers.dense(y, units=64, activation=tf.nn.relu)
-		y = tf.layers.dense(y, units=1)
+	y = tf.layers.dense(y, units=64, activation=tf.nn.relu)
+	y = tf.layers.dense(y, units=2)
 
-		return y
-
-	x1 = x
-	x2 = x
-	m1 = SubNet(x1)
-	m2 = SubNet(x2)
-	return tf.concat([m1, m2], 1)
+	return y
 
 def FixNet2(input, train=True):
 	ratio = 8
@@ -190,30 +182,30 @@ def FixNet2(input, train=True):
 			filters=64,
 			kernel_size=16,
 			dilation_rate=2,
-			padding="valid")
+			padding="valid",
+			activation=tf.nn.relu)
 
 		x = tf.layers.max_pooling1d(x, 4, 4)
-		x = tf.nn.relu(x)
 
 		x = tf.layers.conv1d(
 			inputs=x,
 			filters=128,
 			kernel_size=16,
 			dilation_rate=2,
-			padding="valid")
+			padding="valid",
+			activation=tf.nn.relu)
 
 		x = tf.layers.max_pooling1d(x, 4, 4)
-		x = tf.nn.relu(x)
 
 		x = tf.layers.conv1d(
 			inputs=x,
 			filters=128,
 			kernel_size=16,
 			dilation_rate=2,
-			padding="valid")
+			padding="valid",
+			activation=tf.nn.relu)
 
 		x = tf.layers.max_pooling1d(x, 4, 4)
-		x = tf.nn.relu(x)
 
 		return x
 	
@@ -278,14 +270,14 @@ def FixNet2(input, train=True):
 	m1 = tf.layers.dropout(inputs=m1, rate=0.1)
 	m1 = tf.layers.dense(m1, 256, activation=tf.nn.relu)
 	m1 = tf.layers.dropout(inputs=m1, rate=0.1)
-	m1 = tf.layers.dense(m1, 1, activation=tf.nn.relu)
+	m1 = tf.layers.dense(m1, 1)
 
 	m2 = tf.layers.flatten(m2)
 	m2 = tf.layers.dense(m2, 512, activation=tf.nn.relu)
 	m2 = tf.layers.dropout(inputs=m2, rate=0.1)
 	m2 = tf.layers.dense(m2, 256, activation=tf.nn.relu)
 	m2 = tf.layers.dropout(inputs=m2, rate=0.1)
-	m2 = tf.layers.dense(m2, 1, activation=tf.nn.relu)
+	m2 = tf.layers.dense(m2, 1)
 
 	return tf.concat([m1, m2], 1)
 
