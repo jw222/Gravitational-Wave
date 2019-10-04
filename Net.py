@@ -239,21 +239,20 @@ def FixNet2(input, train=True):
 
 	# Highway
 	def highway(x):
-		for i in range(5):
-			h = tf.layers.conv1d(
-				inputs=x,
-				filters=128,
-				kernel_size=4,
-				padding="same",
-				activation=tf.nn.relu)
-			t = tf.layers.conv1d(
-				inputs=x,
-				filters=128,
-				kernel_size=4,
-				padding="same",
-				activation=tf.nn.sigmoid)
+		h = tf.layers.conv1d(
+			inputs=x,
+			filters=128,
+			kernel_size=4,
+			padding="same",
+			activation=tf.nn.relu)
+		t = tf.layers.conv1d(
+			inputs=x,
+			filters=128,
+			kernel_size=4,
+			padding="same",
+			activation=tf.nn.sigmoid)
 
-			x = h * t + (1 - t) * x
+		x = h * t + (1 - t) * x
 
 		return x
 
@@ -264,9 +263,12 @@ def FixNet2(input, train=True):
 	residual2 = input
 	residual1 = SELayer(residual1)
 	residual2 = SELayer(residual2)
+	m1 = residual1
+	m2 = residual2
 
-	m1 = highway(residual1)
-	m2 = highway(residual2)
+	for i in range(10):
+		m1 = highway(m1)
+		m2 = highway(m2)
 
 	m1 = tf.layers.flatten(m1)
 	m1 = tf.layers.dense(m1, 512, activation=tf.nn.relu)
