@@ -1,6 +1,7 @@
 import numpy as np
 import h5py
 from Noiser import Noiser
+FACTOR = 1.0
 
 f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
@@ -38,7 +39,9 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None):
 		label.append(cur_label) 
 		
 	batch = np.asarray(batch).reshape(num_batch,k,length,1)
-	label = np.asarray(label)
+	print(label)
+	label = np.asarray(label)/FACTOR
+	print(label)
 	return batch, label
 
 def get_val(f,k,length=LENGTH,real_noise=False,SNR=None):
@@ -59,5 +62,5 @@ def get_val(f,k,length=LENGTH,real_noise=False,SNR=None):
 			batch = noise.add_real_noise(input=batch, SNR=snr)
 	batch = noise.add_shift(batch)
 	batch = np.asarray(batch).reshape(k,length,1)
-	label = np.asarray(label)
+	label = np.asarray(label)/FACTOR
 	return batch, label

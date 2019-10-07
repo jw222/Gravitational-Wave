@@ -12,9 +12,10 @@ from Batch import get_batch, get_val
 import os
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
+test_num = 2
 if len(sys.argv) > 1 and sys.argv[1] == "file":
 	stdoutOrigin=sys.stdout 
-	sys.stdout = open("testOut1.txt", "w")
+	sys.stdout = open("testOut"+test_num+".txt", "w")
 
 f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
@@ -50,7 +51,7 @@ sess = tf.Session(config=config)
 sess.run(init)
 loss_hist = []
 val_loss = []
-#saver.restore(sess, "../model/shift.ckpt")
+#saver.restore(sess, "../model/test2.ckpt")
 
 num_epoch = 500
 start = datetime.datetime.now()
@@ -80,7 +81,7 @@ end = datetime.datetime.now()
 print('time: '+str(end-start))
 
 #save model
-save_path = saver.save(sess, '../model/test.ckpt', global_step=num_epoch)
+save_path = saver.save(sess, '../model/test'+test_num+'.ckpt')
 print("Model saved in path: %s" % save_path)
 
 step = 9861//batch_size
@@ -121,7 +122,7 @@ def plot(sess, snrs, f_test, fig, shift=None):
 	#testing without shift
 	start = 0
 	end = 8192
-
+	print("shift is: ", shift)
 	noise = Noiser()
 	m1s = []
 	m2s = []
@@ -131,8 +132,8 @@ def plot(sess, snrs, f_test, fig, shift=None):
 			test_data = f_test['WhitenedSignals'][j][start:end].reshape(1,end-start)
 			test_data = noise.add_shift(test_data)
 			if shift is not None:
-				test_data[:shift[0]] = 0
-				test_data[shift[1]:] = 0
+				test_data[0][:shift[0]] = 0
+				test_data[0][shift[1]:] = 0
 			if real_noise is False:
 				test_data = noise.add_noise(input=test_data, SNR=snrs[i])
 			else:
@@ -141,7 +142,7 @@ def plot(sess, snrs, f_test, fig, shift=None):
 			test_label = f_test['m1m2'][j].reshape(1,2)
 
 			pred.append(sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label, trainable: False})[0])
-		pred = np.asarray(pred)
+		pred = np.asarray(pred) * 10.0
 		test_label = np.asarray(f_test['m1m2'])
 		m1 = np.mean(np.divide(abs(pred.T[0]-test_label.T[0]),test_label.T[0]))
 		m2 = np.mean(np.divide(abs(pred.T[1]-test_label.T[1]),test_label.T[1]))
@@ -163,11 +164,11 @@ def plot(sess, snrs, f_test, fig, shift=None):
 	plt.savefig(fig+'.png')
 
 snrs = np.linspace(5.0,0.1,249)
-plot(sess, snrs, f_test, '0.5-1.0s', shift=[int(8192*0.5), int(8192*1.0)])
-plot(sess, snrs, f_test, '0.0-0.5s', shift=[int(8192*0.0), int(8192*0.5)])
-plot(sess, snrs, f_test, '0.0-0.25s', shift=[int(8192*0.0), int(8192*0.25)])
-plot(sess, snrs, f_test, '0.25-0.5s', shift=[int(8192*0.25), int(8192*0.5)])
-plot(sess, snrs, f_test, '0.5-0.75s', shift=[int(8192*0.5), int(8192*0.75)])
-plot(sess, snrs, f_test, '0.75-1.0s', shift=[int(8192*0.75), int(8192*1.0)])
-plot(sess, snrs, f_test, '0.7-0.9s', shift=[int(8192*0.7), int(8192*0.9)])
-plot(sess, snrs, f_test, '0.0-1.0s')
+plot(sess, snrs, f_test, test_num+'0.5-1.0s', shift=[int(8192*0.5), int(8192*1.0)])
+plot(sess, snrs, f_test, test_num+'0.0-0.5s', shift=[int(8192*0.0), int(8192*0.5)])
+plot(sess, snrs, f_test, test_num+'0.0-0.25s', shift=[int(8192*0.0), int(8192*0.25)])
+plot(sess, snrs, f_test, test_num+'0.25-0.5s', shift=[int(8192*0.25), int(8192*0.5)])
+plot(sess, snrs, f_test, test_num+'0.5-0.75s', shift=[int(8192*0.5), int(8192*0.75)])
+plot(sess, snrs, f_test, test_num+'0.75-1.0s', shift=[int(8192*0.75), int(8192*1.0)])
+plot(sess, snrs, f_test, test_num+'0.7-0.9s', shift=[int(8192*0.7), int(8192*0.9)])
+plot(sess, snrs, f_test, test_num+'0.0-1.0s')
