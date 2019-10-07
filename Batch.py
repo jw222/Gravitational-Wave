@@ -26,14 +26,14 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None):
 			cur_batch.append(f['WhitenedSignals'][idx[k*i+j]][:length])
 			cur_label.append(f['m1m2'][idx[k*i+j]])
 		cur_batch = noise.add_shift(cur_batch)
+		if shift is not None:
+			cur_batch.T[:shift[0]] = 0
+			cur_batch.T[shift[1]:] = 0
 		if SNR is not None:
 			if real_noise is False:
 				cur_batch = noise.add_noise(input=cur_batch, SNR=snr[i])
 			else:
 				cur_batch = noise.add_real_noise(input=cur_batch, SNR=snr[i])
-		if shift is not None:
-			cur_batch.T[:shift[0]] = 0
-			cur_batch.T[shift[1]:] = 0
 		batch.append(cur_batch)
 		label.append(cur_label) 
 		

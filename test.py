@@ -130,13 +130,13 @@ def plot(sess, snrs, f_test, fig, shift=None):
 		for j in range(len(f_test['WhitenedSignals'])):
 			test_data = f_test['WhitenedSignals'][j][start:end].reshape(1,end-start)
 			test_data = noise.add_shift(test_data)
+			if shift is not None:
+				test_data[:shift[0]] = 0
+				test_data[shift[1]:] = 0
 			if real_noise is False:
 				test_data = noise.add_noise(input=test_data, SNR=snrs[i])
 			else:
 				test_data = noise.add_real_noise(input=test_data, SNR=snrs[i])
-			if shift is not None:
-				test_data[:shift[0]] = 0
-				test_data[shift[1]:] = 0
 			test_data = test_data.reshape(1,end-start,1)
 			test_label = f_test['m1m2'][j].reshape(1,2)
 
@@ -165,6 +165,9 @@ def plot(sess, snrs, f_test, fig, shift=None):
 snrs = np.linspace(5.0,0.1,249)
 plot(sess, snrs, f_test, '0.5-1.0s', shift=[int(8192*0.5), int(8192*1.0)])
 plot(sess, snrs, f_test, '0.0-0.5s', shift=[int(8192*0.0), int(8192*0.5)])
-plot(sess, snrs, f_test, '0.5-0.9s', shift=[int(8192*0.5), int(8192*0.9)])
-plot(sess, snrs, f_test, '0.6-0.9s', shift=[int(8192*0.6), int(8192*0.9)])
+plot(sess, snrs, f_test, '0.0-0.25s', shift=[int(8192*0.0), int(8192*0.25)])
+plot(sess, snrs, f_test, '0.25-0.5s', shift=[int(8192*0.25), int(8192*0.5)])
+plot(sess, snrs, f_test, '0.25-0.5s', shift=[int(8192*0.5), int(8192*0.75)])
+plot(sess, snrs, f_test, '0.25-0.5s', shift=[int(8192*0.75), int(8192*1.0)])
+plot(sess, snrs, f_test, '0.25-0.5s', shift=[int(8192*0.7), int(8192*0.9)])
 plot(sess, snrs, f_test, '0.0-1.0s')
