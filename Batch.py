@@ -39,9 +39,7 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None):
 		label.append(cur_label) 
 		
 	batch = np.asarray(batch).reshape(num_batch,k,length,1)
-	print(label)
 	label = np.asarray(label)/FACTOR
-	print(label)
 	return batch, label
 
 def get_val(f,k,length=LENGTH,real_noise=False,SNR=None):
