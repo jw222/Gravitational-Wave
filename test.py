@@ -12,8 +12,11 @@ from Batch import get_batch, get_val
 import os
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
-test_num = 2
-if len(sys.argv) > 1 and sys.argv[1] == "file":
+test_num = '1'
+if len(sys.argv) > 1:
+	test_num = sys.argv[1]
+
+if len(sys.argv) > 2 and sys.argv[2] == "file":
 	stdoutOrigin=sys.stdout 
 	sys.stdout = open("testOut"+test_num+".txt", "w")
 
