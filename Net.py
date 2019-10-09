@@ -20,7 +20,7 @@ def WaveNet(x, train=True):
 			inputs=x,
 			filters=32,
 			kernel_size=2,
-			padding="causal",
+			padding="same",
 			dilation_rate=dilation_rate,
 			activation=tf.nn.tanh)
 		
@@ -29,7 +29,7 @@ def WaveNet(x, train=True):
 			inputs=x,
 			filters=32,
 			kernel_size=2,
-			padding="causal",
+			padding="same",
 			dilation_rate=dilation_rate,
 			activation=tf.nn.sigmoid)
 		
@@ -78,49 +78,33 @@ def WaveNet(x, train=True):
 			kernel_size=1,
 			padding="same")
 	
-	# max pooling to get k outputs
-	#raw = tf.layers.max_pooling1d(raw, (LENGTH-receptive_field)//512, (LENGTH-receptive_field)//512)
-	#raw = tf.slice(raw, [0,0,0], [-1,512,-1])
-	'''
-	values = tf.layers.conv1d(
-			inputs=raw,
-			filters=16,
-			kernel_size=8,
-			padding="same",
-			activation=tf.nn.relu)
-	values = tf.layers.max_pooling1d(values, 4, 4)
-	
-	
-	values = tf.layers.conv1d(
-			inputs=values,
-			filters=1,
-			kernel_size=1,
-			padding="same")
-	'''	
-	values = tf.layers.flatten(raw)
+	raw = tf.layers.flatten(raw)
 	
 	# get k-highest outputs
-	#values, indices = tf.nn.top_k(values, 1024, False)
-	values = tf.slice(values, [0,0], [-1,7000])
+	values, indices = tf.nn.top_k(raw, 1024, False)
+	#values = tf.slice(raw, [0,0], [-1,7000])
 	
-	values = tf.layers.dense(values, units=1024, activation=tf.nn.relu)
+	m1 = values
+	m2 = values
+	m1 = tf.layers.dense(m1, units=512, activation=tf.nn.relu)
+	m2 = tf.layers.dense(m2, units=512, activation=tf.nn.relu)
 	if train is True:
-		values = tf.layers.dropout(inputs=values, rate=0.15)
-	values = tf.layers.dense(values, units=128, activation=tf.nn.relu)
+		m1 = tf.layers.dropout(inputs=m1, rate=0.1)
+		m2 = tf.layers.dropout(inputs=m2, rate=0.1)
+	m1 = tf.layers.dense(m1, units=256, activation=tf.nn.relu)
+	m2 = tf.layers.dense(m2, units=256, activation=tf.nn.relu)
 	if train is True:
-		values = tf.layers.dropout(inputs=values, rate=0.15)
+		m1 = tf.layers.dropout(inputs=m1, rate=0.1)
+		m2 = tf.layers.dropout(inputs=m2, rate=0.1)
+	m1 = tf.layers.dense(m1, units=128, activation=tf.nn.relu)
+	m2 = tf.layers.dense(m2, units=128, activation=tf.nn.relu)
+	if train is True:
+		m1 = tf.layers.dropout(inputs=m1, rate=0.1)
+		m2 = tf.layers.dropout(inputs=m2, rate=0.1)
+	m1 = tf.layers.dense(m1, units=1, activation=tf.nn.relu)
+	m2 = tf.layers.dense(m2, units=1, activation=tf.nn.relu)
 
-	#indices = tf.divide(tf.cast(indices, tf.float32), tf.cast(length, tf.float32))
-	#indices = tf.layers.dense(indices, units=128, activation=tf.nn.relu)
-	#indices = tf.layers.dropout(inputs=indices, rate=0.1)
-	#indices = tf.layers.dense(indices, units=128, activation=tf.nn.relu)
-	#indices = tf.layers.dropout(inputs=indices, rate=0.1)
-	
-	#out = tf.multiply(tf.nn.sigmoid(indices), tf.nn.tanh(values))
-
-	out = tf.layers.dense(values, units=2)
-
-	return out
+	return tf.concat([m1, m2], 1)
 
 
 def FixNet(x, train=True):

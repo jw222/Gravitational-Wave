@@ -7,7 +7,7 @@ import matplotlib.colors as colors
 import math
 import sys
 from Noiser import Noiser
-from Net import WaveNet, FixNet, FixNet2
+from Net import FixNet, FixNet2
 from Batch import get_batch, get_val
 import os
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
@@ -60,6 +60,7 @@ num_epoch = 1000
 start = datetime.datetime.now()
 batch_size = 64
 real_noise = False  #change here!
+# len(snr) = 50
 snrs = [5.0,4.0,3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7] + [0.6,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1,0.1] * 3
 for i in range(num_epoch):
 	snr = snrs[i//20]
@@ -96,7 +97,7 @@ plt.legend(['train_loss','val_loss'], loc=1)
 plt.title('loss history--total time: '+str(end-start))
 plt.xlabel('epochs')
 plt.ylabel('loss')
-plt.savefig('testLoss.png')
+plt.savefig(test_num+'testLoss.png')
 
 
 def plot(sess, snrs, f_test, fig, shift=None):
