@@ -56,11 +56,11 @@ loss_hist = []
 val_loss = []
 #saver.restore(sess, "../model/test2.ckpt")
 
-num_epoch = 500
+num_epoch = 1000
 start = datetime.datetime.now()
 batch_size = 64
 real_noise = False  #change here!
-snrs = [5.0,4.0,3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1]
+snrs = [5.0,4.0,3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7] + [0.6,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1,0.1] * 3
 for i in range(num_epoch):
 	snr = snrs[i//20]
 	train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)

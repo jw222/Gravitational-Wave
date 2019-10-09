@@ -214,19 +214,19 @@ def FixNet2(input, train=True):
 		residual = x
 		m = tf.reduce_mean(residual, [1], keepdims=True)
 		m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
-		m = tf.layers.dense(m, units=128, activation=tf.nn.sigmoid)
+		m = tf.layers.dense(m, units=128, activation=tf.nn.relu)
 		m = m * residual
 		residual = residual + m
 
 		m = tf.reduce_mean(residual, [1], keepdims=True)
 		m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
-		m = tf.layers.dense(m, units=128, activation=tf.nn.sigmoid)
+		m = tf.layers.dense(m, units=128, activation=tf.nn.relu)
 		m = m * residual
 		residual = residual + m
 
 		m = tf.reduce_mean(residual, [1], keepdims=True)
 		m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
-		m = tf.layers.dense(m, units=128, activation=tf.nn.sigmoid)
+		m = tf.layers.dense(m, units=128, activation=tf.nn.relu)
 		m = m * residual
 		residual = residual + m
 
@@ -245,7 +245,7 @@ def FixNet2(input, train=True):
 			filters=128,
 			kernel_size=4,
 			padding="same",
-			activation=tf.nn.sigmoid)
+			activation=tf.nn.relu)
 
 		x = h * t + (1 - t) * x
 
@@ -261,22 +261,26 @@ def FixNet2(input, train=True):
 	m1 = residual1
 	m2 = residual2
 
-	#for i in range(30):
-	m1 = highway(m1)
-	m2 = highway(m2)
+	for i in range(30):
+		m1 = highway(m1)
+		m2 = highway(m2)
 
 	m1 = tf.layers.flatten(m1)
 	m1 = tf.layers.dense(m1, 512, activation=tf.nn.relu)
-	m1 = tf.layers.dropout(inputs=m1, rate=0.1)
+	if train is True:
+		m1 = tf.layers.dropout(inputs=m1, rate=0.1)
 	m1 = tf.layers.dense(m1, 256, activation=tf.nn.relu)
-	m1 = tf.layers.dropout(inputs=m1, rate=0.1)
+	if train is True:
+		m1 = tf.layers.dropout(inputs=m1, rate=0.1)
 	m1 = tf.layers.dense(m1, 1)
 
 	m2 = tf.layers.flatten(m2)
 	m2 = tf.layers.dense(m2, 512, activation=tf.nn.relu)
-	m2 = tf.layers.dropout(inputs=m2, rate=0.1)
+	if train is True:
+		m2 = tf.layers.dropout(inputs=m2, rate=0.1)
 	m2 = tf.layers.dense(m2, 256, activation=tf.nn.relu)
-	m2 = tf.layers.dropout(inputs=m2, rate=0.1)
+	if train is True:
+		m2 = tf.layers.dropout(inputs=m2, rate=0.1)
 	m2 = tf.layers.dense(m2, 1)
 
 	return tf.concat([m1, m2], 1)
