@@ -83,9 +83,9 @@ def WaveNet(x, train=True):
     raw = tf.layers.flatten(raw)
     
     # get k-highest outputs
-    raw = tf.layers.batch_normalization(raw, training=train)
     #raw = tf.abs(raw)
     values, indices = tf.nn.top_k(raw, 1024, False)
+    values = tf.layers.batch_normalization(values, training=train)
     #values = tf.slice(raw, [0,0], [-1,7000])
     
     m1 = values
