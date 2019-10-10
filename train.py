@@ -127,7 +127,7 @@ def plot(sess, snrs, f_test, fig, shift=None):
 	#testing without shift
 	start = 0
 	end = 8192
-	print("shift is: ", shift)
+	print("\n\nshift is: ", shift)
 	noise = Noiser()
 	m1s = []
 	m2s = []
@@ -169,11 +169,9 @@ def plot(sess, snrs, f_test, fig, shift=None):
 	plt.savefig(fig+'.png')
 
 snrs = np.linspace(5.0,0.1,249)
-plot(sess, snrs, f_test, test_num+'0.5-1.0s', shift=[int(8192*0.5), int(8192*1.0)])
 plot(sess, snrs, f_test, test_num+'0.0-0.5s', shift=[int(8192*0.0), int(8192*0.5)])
-plot(sess, snrs, f_test, test_num+'0.0-0.25s', shift=[int(8192*0.0), int(8192*0.25)])
-plot(sess, snrs, f_test, test_num+'0.25-0.5s', shift=[int(8192*0.25), int(8192*0.5)])
-plot(sess, snrs, f_test, test_num+'0.5-0.75s', shift=[int(8192*0.5), int(8192*0.75)])
-plot(sess, snrs, f_test, test_num+'0.75-1.0s', shift=[int(8192*0.75), int(8192*1.0)])
+plot(sess, snrs, f_test, test_num+'0.5-1.0s', shift=[int(8192*0.5), int(8192*1.0)])
+plot(sess, snrs, f_test, test_num+'0.6-1.0s', shift=[int(8192*0.5), int(8192*1.0)])
+plot(sess, snrs, f_test, test_num+'0.7-1.0s', shift=[int(8192*0.5), int(8192*1.0)])
 plot(sess, snrs, f_test, test_num+'0.7-0.9s', shift=[int(8192*0.7), int(8192*0.9)])
 plot(sess, snrs, f_test, test_num+'0.0-1.0s')
