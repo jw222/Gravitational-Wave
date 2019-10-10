@@ -5,6 +5,8 @@ import tensorflow as tf
 def WaveNet(x, train=True):
 	dilation_rates = [2**i for i in range(10)]
 	receptive_field = sum(dilation_rates)+2
+
+	x = tf.layers.batch_normalization(x, training=train)
 	# preprocessing causal layer
 	x = tf.layers.conv1d(
 		inputs=x,
@@ -81,28 +83,39 @@ def WaveNet(x, train=True):
 	raw = tf.layers.flatten(raw)
 	
 	# get k-highest outputs
+	raw = tf.layers.batch_normalization(raw, training=train)
+	#raw = tf.abs(raw)
 	values, indices = tf.nn.top_k(raw, 1024, False)
 	#values = tf.slice(raw, [0,0], [-1,7000])
 	
 	m1 = values
-	m2 = values
 	m1 = tf.layers.dense(m1, units=512, activation=tf.nn.relu)
-	m2 = tf.layers.dense(m2, units=512, activation=tf.nn.relu)
-	if train is True:
-		m1 = tf.layers.dropout(inputs=m1, rate=0.1)
-		m2 = tf.layers.dropout(inputs=m2, rate=0.1)
+	m1 = tf.layers.batch_normalization(m1, training=train)
+	m1 = tf.layers.dropout(inputs=m1, rate=0.1, training=train)
 	m1 = tf.layers.dense(m1, units=256, activation=tf.nn.relu)
-	m2 = tf.layers.dense(m2, units=256, activation=tf.nn.relu)
-	if train is True:
-		m1 = tf.layers.dropout(inputs=m1, rate=0.1)
-		m2 = tf.layers.dropout(inputs=m2, rate=0.1)
+	m1 = tf.layers.batch_normalization(m1, training=train)
+	m1 = tf.layers.dropout(inputs=m1, rate=0.1, training=train)
 	m1 = tf.layers.dense(m1, units=128, activation=tf.nn.relu)
-	m2 = tf.layers.dense(m2, units=128, activation=tf.nn.relu)
-	if train is True:
-		m1 = tf.layers.dropout(inputs=m1, rate=0.1)
-		m2 = tf.layers.dropout(inputs=m2, rate=0.1)
+	m1 = tf.layers.batch_normalization(m1, training=train)
+	m1 = tf.layers.dropout(inputs=m1, rate=0.1, training=train)
 	m1 = tf.layers.dense(m1, units=1, activation=tf.nn.relu)
+
+	m2 = values
+	m2 = tf.layers.dense(m2, units=512, activation=tf.nn.relu)
+	m2 = tf.layers.batch_normalization(m2, training=train)
+	m2 = tf.layers.dropout(inputs=m2, rate=0.1, training=train)	
+	m2 = tf.layers.dense(m2, units=256, activation=tf.nn.relu)
+	m2 = tf.layers.batch_normalization(m2, training=train)	
+	m2 = tf.layers.dropout(inputs=m2, rate=0.1, training=train)	
+	m2 = tf.layers.dense(m2, units=128, activation=tf.nn.relu)
+	m2 = tf.layers.batch_normalization(m2, training=train)	
+	m2 = tf.layers.dropout(inputs=m2, rate=0.1, training=train)	
 	m2 = tf.layers.dense(m2, units=1, activation=tf.nn.relu)
+
+	update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+	with tf.control_dependencies(update_ops):
+    	m1 = tf.identity(m1)
+    	m2 = tf.identity(m2)
 
 	return tf.concat([m1, m2], 1)
 
@@ -149,8 +162,7 @@ def FixNet(x, train=True):
 	y = tf.layers.flatten(x)
 
 	y = tf.layers.dense(y, units=128, activation=tf.nn.relu)
-	#if train is True:
-		#	y = tf.layers.dropout(inputs=y, rate=0.25)
+	#y = tf.layers.dropout(inputs=y, rate=0.25, training=train)
 	y = tf.layers.dense(y, units=64, activation=tf.nn.relu)
 	y = tf.layers.dense(y, units=2)
 
@@ -251,20 +263,16 @@ def FixNet2(input, train=True):
 
 	m1 = tf.layers.flatten(m1)
 	m1 = tf.layers.dense(m1, 512, activation=tf.nn.relu)
-	if train is True:
-		m1 = tf.layers.dropout(inputs=m1, rate=0.1)
+	m1 = tf.layers.dropout(inputs=m1, rate=0.1, training=train)
 	m1 = tf.layers.dense(m1, 256, activation=tf.nn.relu)
-	if train is True:
-		m1 = tf.layers.dropout(inputs=m1, rate=0.1)
+	m1 = tf.layers.dropout(inputs=m1, rate=0.1, training=train)
 	m1 = tf.layers.dense(m1, 1)
 
 	m2 = tf.layers.flatten(m2)
 	m2 = tf.layers.dense(m2, 512, activation=tf.nn.relu)
-	if train is True:
-		m2 = tf.layers.dropout(inputs=m2, rate=0.1)
+	m2 = tf.layers.dropout(inputs=m2, rate=0.1, training=train)
 	m2 = tf.layers.dense(m2, 256, activation=tf.nn.relu)
-	if train is True:
-		m2 = tf.layers.dropout(inputs=m2, rate=0.1)
+	m2 = tf.layers.dropout(inputs=m2, rate=0.1, training=train)
 	m2 = tf.layers.dense(m2, 1)
 
 	return tf.concat([m1, m2], 1)
