@@ -137,7 +137,9 @@ def plot(sess, snrs, f_test, fig, shift=None):
         pred = []
         labels = []
         for j in range(num_batch):
+            '''
             test_data = f_test['WhitenedSignals'][j*batch_size:(j+1)*batch_size]
+            #print(len(test_data))
             test_data = noise.add_shift(test_data)
             if shift is not None:
                 test_data.T[:shift[0]] = 0
@@ -148,6 +150,9 @@ def plot(sess, snrs, f_test, fig, shift=None):
                 test_data = noise.add_real_noise(input=test_data, SNR=snrs[i])
             test_data = test_data.reshape(batch_size,end-start,1)
             test_label = f_test['m1m2'][j*batch_size:(j+1)*batch_size]
+            #print(len(test_label))
+            '''
+            test_data, test_label = get_val(f_test, batch_size, real_noise=real_noise, SNR=snrs[i])
             labels.append(test_label)
             pred.append(sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label, trainable: False}))
         pred = np.asarray(pred).reshape(num_batch*batch_size,2)
