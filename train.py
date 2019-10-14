@@ -171,11 +171,12 @@ def plot(sess, snrs, f_test, fig, shift=None):
 
 def gradual(sess, snrs, f_test, fig, timeStamps):
     noise = Noiser()
-    for i in snrs:
-        print("\n\nsnr is: ", snr)
+    for i in range(len(snrs)):
+        print("\n\nsnr is: ", snrs[i])
         m1s = []
         m2s = []
         for stop in timeStamps:
+            pred = []
             stop = int(stop*8192)
             print("\n\nstop is: ", stop)
             for j in range(len(f_test['WhitenedSignals'])):
@@ -207,7 +208,7 @@ def gradual(sess, snrs, f_test, fig, timeStamps):
         plt.ylabel('Relative Error')
         plt.title('RE with input length')
         plt.grid(True)
-        plt.savefig(fig+str(snr)+'.png')
+        plt.savefig(fig+str(snrs[i])+'.png')
 
 snrs = np.linspace(5.0,0.1,50)
 #plot(sess, snrs, f_test, test_num+'0.0-1.0s')
