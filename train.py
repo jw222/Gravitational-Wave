@@ -16,7 +16,7 @@ test_num = '1'
 if len(sys.argv) > 1:
     test_num = sys.argv[1]
 
-#f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
+f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 tf.logging.set_verbosity(tf.logging.ERROR)
 
@@ -52,8 +52,8 @@ sess.run(init)
 loss_hist = []
 val_loss = []
 saver.restore(sess, "../model/True_R3noise.ckpt")
-'''
-num_epoch = 1000
+
+num_epoch = 0
 start = datetime.datetime.now()
 batch_size = 64
 real_noise = True  #change here!
@@ -85,7 +85,7 @@ for i in range(num_epoch):
     
 end = datetime.datetime.now()
 print('time: '+str(end-start))
-'''
+
 #save model
 #save_path = saver.save(sess, '../model/'+str(real_noise)+'_R'+test_num+'noise.ckpt')
 #print("Model saved in path: %s" % save_path)
