@@ -113,10 +113,10 @@ def WaveNet(x, train=True):
     m2 = tf.layers.dropout(inputs=m2, rate=0.1, training=train) 
     m2 = tf.layers.dense(m2, units=1, activation=tf.nn.relu)
 
-    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    with tf.control_dependencies(update_ops):
-        m1 = tf.identity(m1)
-        m2 = tf.identity(m2)
+    #update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    #with tf.control_dependencies(update_ops):
+    #    m1 = tf.identity(m1)
+    #    m2 = tf.identity(m2)
 
     return tf.concat([m1, m2], 1)
 
