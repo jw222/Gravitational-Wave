@@ -42,7 +42,7 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None):
     label = np.asarray(label)/FACTOR
     return batch, label
 
-def get_val(f,k,length=LENGTH,real_noise=False,SNR=None):
+def get_val(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None):
     batch = []
     label = []
     idx = np.random.choice(f_test['WhitenedSignals'].shape[0], k, replace=False)
@@ -51,7 +51,9 @@ def get_val(f,k,length=LENGTH,real_noise=False,SNR=None):
     for i in range(k):
         batch.append(f['WhitenedSignals'][idx[i]][:length])
         label.append(f['m1m2'][idx[i]])
-
+    if shift is not None:
+        batch.T[:shift[0]] = 0
+        batch.T[shift[1]:] = 0
     if SNR is not None:
         snr = np.random.uniform(low=SNR,high=SNR,size=1)[0]            
         if real_noise is False:

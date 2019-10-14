@@ -16,7 +16,7 @@ test_num = '1'
 if len(sys.argv) > 1:
     test_num = sys.argv[1]
 
-f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
+#f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
 tf.logging.set_verbosity(tf.logging.ERROR)
 
@@ -51,8 +51,8 @@ sess = tf.Session(config=config)
 sess.run(init)
 loss_hist = []
 val_loss = []
-#saver.restore(sess, "../model/shift.ckpt")
-
+saver.restore(sess, "../model/True_R3noise.ckpt")
+'''
 num_epoch = 1000
 start = datetime.datetime.now()
 batch_size = 64
@@ -85,10 +85,10 @@ for i in range(num_epoch):
     
 end = datetime.datetime.now()
 print('time: '+str(end-start))
-
+'''
 #save model
-save_path = saver.save(sess, '../model/'+str(real_noise)+'_R'+test_num+'noise.ckpt')
-print("Model saved in path: %s" % save_path)
+#save_path = saver.save(sess, '../model/'+str(real_noise)+'_R'+test_num+'noise.ckpt')
+#print("Model saved in path: %s" % save_path)
 step = 9861//batch_size
 axis = np.arange(step-1, len(loss_hist), step)
 plt.figure()
@@ -131,24 +131,30 @@ def plot(sess, snrs, f_test, fig, shift=None):
     noise = Noiser()
     m1s = []
     m2s = []
+    batch_size = 64
+    num_batch = len(f_test['WhitenedSignals']) // batch_size
     for i in range(len(snrs)):
         pred = []
-        for j in range(len(f_test['WhitenedSignals'])):
-            test_data = f_test['WhitenedSignals'][j][start:end].reshape(1,end-start)
+        labels = []
+        for j in range(num_batch):
+            test_data = f_test['WhitenedSignals'][j*batch_size:(j+1)*batch_size]
             test_data = noise.add_shift(test_data)
             if shift is not None:
-                test_data[0][:shift[0]] = 0
-                test_data[0][shift[1]:] = 0
+                test_data.T[:shift[0]] = 0
+                test_data.T[shift[1]:] = 0
             if real_noise is False:
                 test_data = noise.add_noise(input=test_data, SNR=snrs[i])
             else:
                 test_data = noise.add_real_noise(input=test_data, SNR=snrs[i])
-            test_data = test_data.reshape(1,end-start,1)
-            test_label = f_test['m1m2'][j].reshape(1,2)
-
-            pred.append(sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label, trainable: False})[0])
-        pred = np.asarray(pred)
-        test_label = np.asarray(f_test['m1m2'])
+            test_data = test_data.reshape(batch_size,end-start,1)
+            test_label = f_test['m1m2'][j*batch_size:(j+1)*batch_size]
+            labels.append(test_label)
+            pred.append(sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label, trainable: False}))
+        pred = np.asarray(pred).reshape(num_batch*batch_size,2)
+        #test_label = np.asarray(f_test['m1m2'][:num_batch*batch_size])
+        
+        test_label = np.asarray(labels).reshape(num_batch*batch_size,2)
+        
         m1 = np.mean(np.divide(abs(pred.T[0]-test_label.T[0]),test_label.T[0]))
         m2 = np.mean(np.divide(abs(pred.T[1]-test_label.T[1]),test_label.T[1]))
         m1s.append(m1)
@@ -168,10 +174,12 @@ def plot(sess, snrs, f_test, fig, shift=None):
     plt.title('RE with SNR')
     plt.savefig(fig+'.png')
 
-snrs = np.linspace(5.0,0.1,249)
+snrs = np.linspace(5.0,0.1,10)
+plot(sess, snrs, f_test, test_num+'0.0-1.0s')
+'''
 plot(sess, snrs, f_test, test_num+'0.0-0.5s', shift=[int(8192*0.0), int(8192*0.5)])
 plot(sess, snrs, f_test, test_num+'0.5-1.0s', shift=[int(8192*0.5), int(8192*1.0)])
 plot(sess, snrs, f_test, test_num+'0.6-1.0s', shift=[int(8192*0.5), int(8192*1.0)])
 plot(sess, snrs, f_test, test_num+'0.7-1.0s', shift=[int(8192*0.5), int(8192*1.0)])
 plot(sess, snrs, f_test, test_num+'0.7-0.9s', shift=[int(8192*0.7), int(8192*0.9)])
-plot(sess, snrs, f_test, test_num+'0.0-1.0s')
+'''
