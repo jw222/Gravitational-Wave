@@ -51,7 +51,7 @@ sess = tf.Session(config=config)
 sess.run(init)
 loss_hist = []
 val_loss = []
-saver.restore(sess, "../model/True_R3noise.ckpt")
+saver.restore(sess, "../model/True_R2noise.ckpt")
 
 num_epoch = 0
 start = datetime.datetime.now()
@@ -131,35 +131,24 @@ def plot(sess, snrs, f_test, fig, shift=None):
     noise = Noiser()
     m1s = []
     m2s = []
-    batch_size = 64
-    num_batch = len(f_test['WhitenedSignals']) // batch_size
     for i in range(len(snrs)):
         pred = []
-        labels = []
-        for j in range(num_batch):
-            '''
-            test_data = f_test['WhitenedSignals'][j*batch_size:(j+1)*batch_size]
-            #print(len(test_data))
+        for j in range(len(f_test['WhitenedSignals'])):
+            test_data = f_test['WhitenedSignals'][j][start:end].reshape(1,end-start)
             test_data = noise.add_shift(test_data)
             if shift is not None:
-                test_data.T[:shift[0]] = 0
-                test_data.T[shift[1]:] = 0
+                test_data[0][:shift[0]] = 0
+                test_data[0][shift[1]:] = 0
             if real_noise is False:
                 test_data = noise.add_noise(input=test_data, SNR=snrs[i])
             else:
                 test_data = noise.add_real_noise(input=test_data, SNR=snrs[i])
-            test_data = test_data.reshape(batch_size,end-start,1)
-            test_label = f_test['m1m2'][j*batch_size:(j+1)*batch_size]
-            #print(len(test_label))
-            '''
-            test_data, test_label = get_val(f_test, batch_size, real_noise=real_noise, SNR=snrs[i])
-            labels.append(test_label)
-            pred.append(sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label, trainable: False}))
-        pred = np.asarray(pred).reshape(num_batch*batch_size,2)
-        #test_label = np.asarray(f_test['m1m2'][:num_batch*batch_size])
-        
-        test_label = np.asarray(labels).reshape(num_batch*batch_size,2)
-        
+            test_data = test_data.reshape(1,end-start,1)
+            test_label = f_test['m1m2'][j].reshape(1,2)
+
+            pred.append(sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label, trainable: False})[0])
+        pred = np.asarray(pred)
+        test_label = np.asarray(f_test['m1m2'])
         m1 = np.mean(np.divide(abs(pred.T[0]-test_label.T[0]),test_label.T[0]))
         m2 = np.mean(np.divide(abs(pred.T[1]-test_label.T[1]),test_label.T[1]))
         m1s.append(m1)
@@ -179,7 +168,8 @@ def plot(sess, snrs, f_test, fig, shift=None):
     plt.title('RE with SNR')
     plt.savefig(fig+'.png')
 
-snrs = np.linspace(5.0,0.1,10)
+
+snrs = np.linspace(5.0,0.1,50)
 plot(sess, snrs, f_test, test_num+'0.0-1.0s')
 '''
 plot(sess, snrs, f_test, test_num+'0.0-0.5s', shift=[int(8192*0.0), int(8192*0.5)])
