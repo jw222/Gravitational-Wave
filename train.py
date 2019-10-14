@@ -166,6 +166,7 @@ def plot(sess, snrs, f_test, fig, shift=None):
     plt.xlabel('SNR')
     plt.ylabel('Relative Error')
     plt.title('RE with SNR')
+    plt.grid(True)
     plt.savefig(fig+'.png')
 
 def gradual(sess, snrs, f_test, fig, timeStamps):
@@ -205,6 +206,7 @@ def gradual(sess, snrs, f_test, fig, timeStamps):
 	    plt.xlabel('timeStamps in seconds')
 	    plt.ylabel('Relative Error')
 	    plt.title('RE with input length')
+	    plt.grid(True)
 	    plt.savefig(fig+str(snr)+'.png')
 
 snrs = np.linspace(5.0,0.1,50)
