@@ -171,46 +171,46 @@ def plot(sess, snrs, f_test, fig, shift=None):
 
 def gradual(sess, snrs, f_test, fig, timeStamps):
 
-	for snr in snrs:
-		print("\n\nsnr is: ", snr)
-		m1s = []
-		m2s = []
-		for stop in timeStamps:
-			stop *= 8192
-			print("\n\nstop is: ", stop)
-			for j in range(len(f_test['WhitenedSignals'])):
-	            test_data = f_test['WhitenedSignals'][j].reshape(1,8192)
-	            test_data = noise.add_shift(test_data)
-	            test_data[0][stop:] = 0
-	            if real_noise is False:
-	                test_data = noise.add_noise(input=test_data, SNR=snr)
-	            else:
-	                test_data = noise.add_real_noise(input=test_data, SNR=snr)
-	            test_data = test_data.reshape(1,8192,1)
-	            test_label = f_test['m1m2'][j].reshape(1,2)
-	            pred.append(sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label, trainable: False})[0])
+    for snr in snrs:
+        print("\n\nsnr is: ", snr)
+        m1s = []
+        m2s = []
+        for stop in timeStamps:
+            stop *= 8192
+            print("\n\nstop is: ", stop)
+            for j in range(len(f_test['WhitenedSignals'])):
+                test_data = f_test['WhitenedSignals'][j].reshape(1,8192)
+                test_data = noise.add_shift(test_data)
+                test_data[0][stop:] = 0
+                if real_noise is False:
+                    test_data = noise.add_noise(input=test_data, SNR=snr)
+                else:
+                    test_data = noise.add_real_noise(input=test_data, SNR=snr)
+                test_data = test_data.reshape(1,8192,1)
+                test_label = f_test['m1m2'][j].reshape(1,2)
+                pred.append(sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label, trainable: False})[0])
 
-	        pred = np.asarray(pred)
-	        test_label = np.asarray(f_test['m1m2'])
-	        m1 = np.mean(np.divide(abs(pred.T[0]-test_label.T[0]),test_label.T[0]))
-	        m2 = np.mean(np.divide(abs(pred.T[1]-test_label.T[1]),test_label.T[1]))
-	        m1s.append(m1)
-	        m2s.append(m2)
-	        print('SNR: '+str(snr)+' -- m1: '+"{0:.5%}".format(m1)+' m2: '+"{0:.5%}".format(m2))
-		m1s = np.asarray(m1s)
-	    m2s = np.asarray(m2s)
-	    plt.figure()
-	    plt.plot(timeStamps, m1s*100)
-	    plt.plot(timeStamps, m2s*100)
-	    plt.legend(['m1','m2'], loc=1)
-	    plt.xlabel('timeStamps in seconds')
-	    plt.ylabel('Relative Error')
-	    plt.title('RE with input length')
-	    plt.grid(True)
-	    plt.savefig(fig+str(snr)+'.png')
+            pred = np.asarray(pred)
+            test_label = np.asarray(f_test['m1m2'])
+            m1 = np.mean(np.divide(abs(pred.T[0]-test_label.T[0]),test_label.T[0]))
+            m2 = np.mean(np.divide(abs(pred.T[1]-test_label.T[1]),test_label.T[1]))
+            m1s.append(m1)
+            m2s.append(m2)
+            print('SNR: '+str(snr)+' -- m1: '+"{0:.5%}".format(m1)+' m2: '+"{0:.5%}".format(m2))
+        m1s = np.asarray(m1s)
+        m2s = np.asarray(m2s)
+        plt.figure()
+        plt.plot(timeStamps, m1s*100)
+        plt.plot(timeStamps, m2s*100)
+        plt.legend(['m1','m2'], loc=1)
+        plt.xlabel('timeStamps in seconds')
+        plt.ylabel('Relative Error')
+        plt.title('RE with input length')
+        plt.grid(True)
+        plt.savefig(fig+str(snr)+'.png')
 
 snrs = np.linspace(5.0,0.1,50)
-plot(sess, snrs, f_test, test_num+'0.0-1.0s')
+#plot(sess, snrs, f_test, test_num+'0.0-1.0s')
 
 snrs = [5.0,3.0,2.0,1.5,1.0,0.7,0.5,0.3,0.2,0.1]
 timeStamps = [0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
