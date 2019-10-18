@@ -51,9 +51,9 @@ sess = tf.Session(config=config)
 sess.run(init)
 loss_hist = []
 val_loss = []
-saver.restore(sess, "../model/True_R2noise.ckpt")
+#saver.restore(sess, "../model/True_R2noise.ckpt")
 
-num_epoch = 0
+num_epoch = 500
 start = datetime.datetime.now()
 batch_size = 64
 real_noise = True  #change here!
@@ -62,9 +62,9 @@ rate = 0.001
 low = [0.6,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1,0.1]
 snrs = [5.0,4.0,3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7] + [lows for lows in low for i in range(3)]
 for i in range(num_epoch):
-    snr = snrs[i//20]
+    snr = snrs[i//10]
     # global_step.eval(session=sess)
-    train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)
+    train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr, blankRatio=0.1)
     for j in range(len(train_data)):
         cur_data = train_data[j]
         cur_label = train_label[j]
@@ -87,8 +87,8 @@ end = datetime.datetime.now()
 print('time: '+str(end-start))
 
 #save model
-#save_path = saver.save(sess, '../model/'+str(real_noise)+'_R'+test_num+'noise.ckpt')
-#print("Model saved in path: %s" % save_path)
+save_path = saver.save(sess, '../model/'+str(real_noise)+'_R'+test_num+'noise.ckpt')
+print("Model saved in path: %s" % save_path)
 step = 9861//batch_size
 axis = np.arange(step-1, len(loss_hist), step)
 plt.figure()
@@ -211,7 +211,9 @@ def gradual(sess, snrs, f_test, fig, timeStamps):
         plt.savefig(fig+str(snrs[i])+'.png')
 
 snrs = np.linspace(5.0,0.1,50)
-#plot(sess, snrs, f_test, test_num+'0.0-1.0s')
+plot(sess, snrs, f_test, test_num+'0.0-1.0s')
+plot(sess, snrs, f_test, test_num+'0.0-1.0s', shift=[int(8192*0.7),int(8192*0.9)])
+plot(sess, snrs, f_test, test_num+'0.0-1.0s', shift=[int(8192*0.5),int(8192*1.0)])
 
 snrs = np.array([5.0,3.0,2.0,1.5,1.0,0.7,0.5,0.3,0.2,0.1])
 timeStamps = np.array([0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
