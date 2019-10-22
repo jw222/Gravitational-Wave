@@ -20,8 +20,8 @@ if len(sys.argv) > 2 and sys.argv[2] == "file":
     stdoutOrigin=sys.stdout 
     sys.stdout = open("testOut"+test_num+".txt", "w")
 
-f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
-f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
+f_train = h5py.File("data/twoSecondTrain.h5", "r")
+f_test = h5py.File("data/twoSecondTest.h5", "r")
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 input_data = tf.placeholder(tf.float32, [None, 8192, 1])
@@ -36,7 +36,7 @@ loss = tf.losses.mean_squared_error(input_label, predictions)
 global_step = tf.Variable(0, trainable=False)
 learning_rate = tf.train.exponential_decay(learning_rate=0.0001, 
                                            global_step=global_step, 
-                                           decay_steps=9861//64, 
+                                           decay_steps=len(f_train['m1m2'])//64, 
                                            decay_rate=0.96, 
                                            staircase=True)
 
@@ -133,8 +133,8 @@ def plot(sess, snrs, f_test, fig, shift=None):
     m2s = []
     for i in range(len(snrs)):
         pred = []
-        for j in range(len(f_test['WhitenedSignals'])):
-            test_data = f_test['WhitenedSignals'][j][start:end].reshape(1,end-start)
+        for j in range(len(f_test['data'])):
+            test_data = f_test['data'][j][start:end].reshape(1,end-start)
             test_data = noise.add_shift(test_data)
             if shift is not None:
                 test_data[0][:shift[0]] = 0

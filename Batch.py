@@ -3,11 +3,11 @@ import h5py
 from Noiser import Noiser
 FACTOR = 1.0
 
-f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
-f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
+f_train = h5py.File("data/twoSecondTrain.h5", "r")
+f_test = h5py.File("data/twoSecondTest.h5", "r")
 
-NUM_DATA = f_train['WhitenedSignals'].shape[0]
-LENGTH = f_train['WhitenedSignals'].shape[1]
+NUM_DATA = f_train['data'].shape[0]
+LENGTH = f_train['data'].shape[1]
 def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None,blankRatio=0.0): 
     batch = []
     label = []
@@ -29,7 +29,7 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None,blankRatio=
                 cur_batch.append(np.zeros(length))
                 cur_label.append([0,0])
                 continue
-            cur_batch.append(f['WhitenedSignals'][idx[k*i+j]][:length])
+            cur_batch.append(f['data'][idx[k*i+j]][:length])
             cur_label.append(f['m1m2'][idx[k*i+j]])
         cur_batch = noise.add_shift(cur_batch)
         if shift is not None:
@@ -50,11 +50,11 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None,blankRatio=
 def get_val(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None):
     batch = []
     label = []
-    idx = np.random.choice(f_test['WhitenedSignals'].shape[0], k, replace=False)
+    idx = np.random.choice(f_test['data'].shape[0], k, replace=False)
     noise = Noiser()
 
     for i in range(k):
-        batch.append(f['WhitenedSignals'][idx[i]][:length])
+        batch.append(f['data'][idx[i]][:length])
         label.append(f['m1m2'][idx[i]])
     if shift is not None:
         batch.T[:shift[0]] = 0

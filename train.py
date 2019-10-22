@@ -16,8 +16,12 @@ test_num = '1'
 if len(sys.argv) > 1:
     test_num = sys.argv[1]
 
-f_train = h5py.File("data/TrainEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
-f_test = h5py.File("data/TestEOB_q-1-10-0.02_ProperWhitenZ.h5", "r")
+if len(sys.argv) > 2 and sys.argv[2] == "file":
+    stdoutOrigin=sys.stdout 
+    sys.stdout = open("testOut"+test_num+".txt", "w")
+
+f_train = h5py.File("data/twoSecondTrain.h5", "r")
+f_test = h5py.File("data/twoSecondTest.h5", "r")
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 input_data = tf.placeholder(tf.float32, [None, None, 1])
@@ -133,8 +137,8 @@ def plot(sess, snrs, f_test, fig, shift=None):
     m2s = []
     for i in range(len(snrs)):
         pred = []
-        for j in range(len(f_test['WhitenedSignals'])):
-            test_data = f_test['WhitenedSignals'][j][start:end].reshape(1,end-start)
+        for j in range(len(f_test['data'])):
+            test_data = f_test['data'][j][start:end].reshape(1,end-start)
             test_data = noise.add_shift(test_data)
             if shift is not None:
                 test_data[0][:shift[0]] = 0
@@ -179,8 +183,8 @@ def gradual(sess, snrs, f_test, fig, timeStamps):
             pred = []
             stop = int(stop*8192)
             print("\n\nstop is: ", stop)
-            for j in range(len(f_test['WhitenedSignals'])):
-                test_data = f_test['WhitenedSignals'][j].reshape(1,8192)
+            for j in range(len(f_test['data'])):
+                test_data = f_test['data'][j].reshape(1,8192)
                 test_data = noise.add_shift(test_data)
                 test_data[0][stop:] = 0
                 if real_noise is False:
