@@ -4,7 +4,10 @@
 __pycache__/
 data/
 result/
+generate/
+plot/
 *.png
 *.out
 *.err
 *.txt
+*.ipynb
