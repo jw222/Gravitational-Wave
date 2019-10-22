@@ -12,6 +12,7 @@ from Batch import get_batch, get_val
 import os
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
+
 test_num = '1'
 if len(sys.argv) > 1:
     test_num = sys.argv[1]
@@ -22,6 +23,8 @@ if len(sys.argv) > 2 and sys.argv[2] == "file":
 
 f_train = h5py.File("data/twoSecondTrain.h5", "r")
 f_test = h5py.File("data/twoSecondTest.h5", "r")
+NUM_DATA = f_train['data'].shape[0]
+LENGTH = f_train['data'].shape[1]
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 input_data = tf.placeholder(tf.float32, [None, None, 1])
@@ -37,7 +40,7 @@ loss = tf.losses.mean_squared_error(input_label, predictions)
 global_step = tf.Variable(0, trainable=False)
 learning_rate = tf.train.exponential_decay(learning_rate=0.001, 
                                            global_step=global_step, 
-                                           decay_steps=9861//64, 
+                                           decay_steps=NUM_DATA//64, 
                                            decay_rate=0.96, 
                                            staircase=True)
 
@@ -60,7 +63,7 @@ val_loss = []
 num_epoch = 500
 start = datetime.datetime.now()
 batch_size = 64
-real_noise = True  #change here!
+real_noise = False  #change here!
 rate = 0.001
 # len(snr) = 50
 low = [0.6,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1,0.1]
@@ -68,7 +71,7 @@ snrs = [5.0,4.0,3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7] + [lows for low
 for i in range(num_epoch):
     snr = snrs[i//10]
     # global_step.eval(session=sess)
-    train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr, blankRatio=0.1)
+    train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)
     for j in range(len(train_data)):
         cur_data = train_data[j]
         cur_label = train_label[j]
@@ -93,7 +96,7 @@ print('time: '+str(end-start))
 #save model
 save_path = saver.save(sess, '../model/'+str(real_noise)+'_R'+test_num+'noise.ckpt')
 print("Model saved in path: %s" % save_path)
-step = 9861//batch_size
+step = NUM_DATA//batch_size
 axis = np.arange(step-1, len(loss_hist), step)
 plt.figure()
 plt.plot(loss_hist)
@@ -130,7 +133,7 @@ def plot(sess, snrs, f_test, fig, shift=None):
 
     #testing without shift
     start = 0
-    end = 8192
+    end = LENGTH
     print("\n\nshift is: ", shift)
     noise = Noiser()
     m1s = []
@@ -181,17 +184,17 @@ def gradual(sess, snrs, f_test, fig, timeStamps):
         m2s = []
         for stop in timeStamps:
             pred = []
-            stop = int(stop*8192)
+            stop = int(stop*LENGTH)
             print("\n\nstop is: ", stop)
             for j in range(len(f_test['data'])):
-                test_data = f_test['data'][j].reshape(1,8192)
+                test_data = f_test['data'][j].reshape(1,LENGTH)
                 test_data = noise.add_shift(test_data)
                 test_data[0][stop:] = 0
                 if real_noise is False:
                     test_data = noise.add_noise(input=test_data, SNR=snrs[i])
                 else:
                     test_data = noise.add_real_noise(input=test_data, SNR=snrs[i])
-                test_data = test_data.reshape(1,8192,1)
+                test_data = test_data.reshape(1,LENGTH,1)
                 test_label = f_test['m1m2'][j].reshape(1,2)
                 pred.append(sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label, trainable: False})[0])
 
@@ -216,8 +219,8 @@ def gradual(sess, snrs, f_test, fig, timeStamps):
 
 snrs = np.linspace(5.0,0.1,50)
 plot(sess, snrs, f_test, test_num+'0.0-1.0s')
-plot(sess, snrs, f_test, test_num+'0.0-1.0s', shift=[int(8192*0.7),int(8192*0.9)])
-plot(sess, snrs, f_test, test_num+'0.0-1.0s', shift=[int(8192*0.5),int(8192*1.0)])
+plot(sess, snrs, f_test, test_num+'0.0-1.0s', shift=[int(LENGTH*0.7),int(LENGTH*0.9)])
+plot(sess, snrs, f_test, test_num+'0.0-1.0s', shift=[int(LENGTH*0.5),int(LENGTH*1.0)])
 
 snrs = np.array([5.0,3.0,2.0,1.5,1.0,0.7,0.5,0.3,0.2,0.1])
 timeStamps = np.array([0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
