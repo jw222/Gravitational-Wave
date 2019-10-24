@@ -17,10 +17,11 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None,blankRatio=
 
     num_batch = NUM_DATA//k
     blankNum = int(blankRatio * k)
+    snr = np.zeros(num_batch)
     high = 3.0
     if SNR is not None and SNR > high:
         high = SNR
-    if SNR is not None
+    if SNR is not None:
         snr = np.random.uniform(low=SNR,high=high,size=num_batch)
     for i in range(num_batch):
         cur_batch = []
