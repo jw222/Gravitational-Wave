@@ -3,8 +3,9 @@ import numpy as np
 import random
 
 class Noiser(object):
-    def __init__(self):
+    def __init__(self, length):
         self.real_noise = h5py.File('data/Noise_L1_single.hdf5', 'r')
+        self.length = length
 
     def shift_single_wave(self, input):
         shift_index = np.random.randint(int(10), int(input.shape[0] * 0.06), size=1)[0]
@@ -33,7 +34,7 @@ class Noiser(object):
 
     def add_real_noise(self, input, SNR):
         ramint = random.randint(20,12000000)
-        noise_data = self.real_noise['Dataset1'][ramint:(ramint + 8192)]
+        noise_data = self.real_noise['Dataset1'][ramint:(ramint + length)]
         noise_data -= np.mean(noise_data)
         noise_data_ = noise_data / np.std(noise_data)
         noise_data_ = np.tile(noise_data_[np.newaxis], [np.asarray(input).shape[0], 1])

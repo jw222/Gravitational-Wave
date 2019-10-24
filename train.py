@@ -26,6 +26,9 @@ f_test = h5py.File("data/twoSecondTest.h5", "r")
 NUM_DATA = f_train['data'].shape[0]
 LENGTH = f_train['data'].shape[1]
 tf.logging.set_verbosity(tf.logging.ERROR)
+if np.isnan(f_train['data']).any():
+    print("nan present in training data. Exiting...")
+    SystemExit
 
 input_data = tf.placeholder(tf.float32, [None, None, 1])
 input_label = tf.placeholder(tf.int32, [None,2])
@@ -58,12 +61,12 @@ sess = tf.Session(config=config)
 sess.run(init)
 loss_hist = []
 val_loss = []
-#saver.restore(sess, "../model/True_R2noise.ckpt")
+#saver.restore(sess, "../model/False_R1noise.ckpt")
 
 num_epoch = 500
 start = datetime.datetime.now()
 batch_size = 64
-real_noise = False  #change here!
+real_noise = True  #change here!
 rate = 0.001
 # len(snr) = 50
 low = [0.6,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1,0.1]
@@ -135,7 +138,7 @@ def plot(sess, snrs, f_test, fig, shift=None):
     start = 0
     end = LENGTH
     print("\n\nshift is: ", shift)
-    noise = Noiser()
+    noise = Noiser(LENGTH)
     m1s = []
     m2s = []
     for i in range(len(snrs)):
@@ -177,7 +180,7 @@ def plot(sess, snrs, f_test, fig, shift=None):
     plt.savefig(fig+'.png')
 
 def gradual(sess, snrs, f_test, fig, timeStamps):
-    noise = Noiser()
+    noise = Noiser(LENGTH)
     for i in range(len(snrs)):
         print("\n\nsnr is: ", snrs[i])
         m1s = []
@@ -219,8 +222,8 @@ def gradual(sess, snrs, f_test, fig, timeStamps):
 
 snrs = np.linspace(5.0,0.1,50)
 plot(sess, snrs, f_test, test_num+'0.0-1.0s')
-plot(sess, snrs, f_test, test_num+'0.0-1.0s', shift=[int(LENGTH*0.7),int(LENGTH*0.9)])
-plot(sess, snrs, f_test, test_num+'0.0-1.0s', shift=[int(LENGTH*0.5),int(LENGTH*1.0)])
+plot(sess, snrs, f_test, test_num+'0.7-0.9s', shift=[int(LENGTH*0.7),int(LENGTH*0.9)])
+plot(sess, snrs, f_test, test_num+'0.5-1.0s', shift=[int(LENGTH*0.5),int(LENGTH*1.0)])
 
 snrs = np.array([5.0,3.0,2.0,1.5,1.0,0.7,0.5,0.3,0.2,0.1])
 timeStamps = np.array([0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])

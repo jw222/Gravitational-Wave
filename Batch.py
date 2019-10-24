@@ -13,14 +13,15 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None,blankRatio=
     label = []
     idx = np.arange(NUM_DATA)
     np.random.shuffle(idx)
-    noise = Noiser()
+    noise = Noiser(LENGTH)
 
     num_batch = NUM_DATA//k
     blankNum = int(blankRatio * k)
     high = 3.0
     if SNR is not None and SNR > high:
         high = SNR
-    snr = np.random.uniform(low=SNR,high=high,size=num_batch)
+    if SNR is not None
+        snr = np.random.uniform(low=SNR,high=high,size=num_batch)
     for i in range(num_batch):
         cur_batch = []
         cur_label = []
@@ -51,7 +52,7 @@ def get_val(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None):
     batch = []
     label = []
     idx = np.random.choice(f_test['data'].shape[0], k, replace=False)
-    noise = Noiser()
+    noise = Noiser(LENGTH)
 
     for i in range(k):
         batch.append(f['data'][idx[i]][:length])
