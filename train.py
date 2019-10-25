@@ -222,10 +222,11 @@ def gradual(sess, snrs, f_test, fig, timeStamps):
 
 snrs = np.linspace(5.0,0.1,50)
 plot(sess, snrs, f_test, test_num+'0.0-1.0s')
-plot(sess, snrs, f_test, test_num+'zeroInput', shift=[0,0])
 plot(sess, snrs, f_test, test_num+'0.7-0.9s', shift=[int(LENGTH*0.7),int(LENGTH*0.9)])
 plot(sess, snrs, f_test, test_num+'0.5-1.0s', shift=[int(LENGTH*0.5),int(LENGTH*1.0)])
 
 snrs = np.array([5.0,3.0,2.0,1.5,1.0,0.7,0.5,0.3,0.2,0.1])
 timeStamps = np.array([0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
 gradual(sess, snrs, f_test, 'test'+test_num+'-', timeStamps)
+
+plot(sess, snrs, f_test, test_num+'zeroInput', shift=[0,0])
