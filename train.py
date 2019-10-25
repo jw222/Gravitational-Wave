@@ -63,7 +63,7 @@ loss_hist = []
 val_loss = []
 #saver.restore(sess, "../model/False_R1noise.ckpt")
 
-num_epoch = 100
+num_epoch = 500
 start = datetime.datetime.now()
 batch_size = 64
 real_noise = True  #change here!
@@ -72,7 +72,7 @@ rate = 0.001
 low = [0.6,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1,0.1]
 snrs = [5.0,4.0,3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7] + [lows for lows in low for i in range(3)]
 for i in range(num_epoch):
-    snr = snrs[i//2]
+    snr = snrs[i//10]
     # global_step.eval(session=sess)
     train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)
     for j in range(len(train_data)):
@@ -222,6 +222,7 @@ def gradual(sess, snrs, f_test, fig, timeStamps):
 
 snrs = np.linspace(5.0,0.1,50)
 plot(sess, snrs, f_test, test_num+'0.0-1.0s')
+plot(sess, snrs, f_test, test_num+'zeroInput', shift=[0,0])
 plot(sess, snrs, f_test, test_num+'0.7-0.9s', shift=[int(LENGTH*0.7),int(LENGTH*0.9)])
 plot(sess, snrs, f_test, test_num+'0.5-1.0s', shift=[int(LENGTH*0.5),int(LENGTH*1.0)])
 

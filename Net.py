@@ -18,7 +18,7 @@ def WaveNet(x, train=True):
         # filter
         x_f = tf.layers.conv1d(
             inputs=x,
-            filters=32,
+            filters=16,
             kernel_size=2,
             padding="same",
             dilation_rate=dilation_rate,
@@ -27,7 +27,7 @@ def WaveNet(x, train=True):
         # gate
         x_g = tf.layers.conv1d(
             inputs=x,
-            filters=32,
+            filters=16,
             kernel_size=2,
             padding="same",
             dilation_rate=dilation_rate,
@@ -42,7 +42,7 @@ def WaveNet(x, train=True):
         # skip postprocessing
         skip = tf.layers.conv1d(
             inputs=skip,
-            filters=128,
+            filters=32,
             kernel_size=1,
             padding="same")
         
@@ -66,7 +66,7 @@ def WaveNet(x, train=True):
     # postprocessing
     raw = tf.layers.conv1d(
             inputs=raw,
-            filters=128,
+            filters=64,
             kernel_size=1,
             padding="same",
             activation=tf.nn.relu)
