@@ -5,6 +5,7 @@ import h5py
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import math
+import sys
 import argparse
 from Noiser import Noiser
 from Net import WaveNet
