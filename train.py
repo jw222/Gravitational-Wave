@@ -5,26 +5,42 @@ import h5py
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import math
-import sys
+import argparse
 from Noiser import Noiser
 from Net import WaveNet
 from Batch import get_batch, get_val
 import os
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
+parser = argparse.ArgumentParser(description='GW code')
+parser.add_argument('--train', dest='train_file', type=str, default='data/oneSecondTrain.h5',
+                    help='the file of the training data')
+parser.add_argument('--test', dest='test_file', type=str, default='data/oneSecondTest.h5',
+                    help='the file of the testing data')
+parser.add_argument('--test_num', dest='test_num', type=str, default='1',
+                    help='test number')
+parser.add_argument('--file', dest='file', type=bool, default=False,
+                    help='whether cast output to a file')
+parser.add_argument('--snr_step', dest='snr_step', type=int, default=10,
+                    help='how many steps does each snr train')
+args = parser.parse_args()
 
-test_num = '1'
-if len(sys.argv) > 1:
-    test_num = sys.argv[1]
 
-if len(sys.argv) > 2 and sys.argv[2] == "file":
+train_path = args.train_file
+test_path = args.test_file
+test_num = args.test_num
+snr_step = args.snr_step
+if args.file:
     stdoutOrigin=sys.stdout 
     sys.stdout = open("testOut"+test_num+".txt", "w")
 
-f_train = h5py.File("data/twoSecondTrain.h5", "r")
-f_test = h5py.File("data/twoSecondTest.h5", "r")
+f_train = h5py.File(train_path, "r")
+f_test = h5py.File(test_path, "r")
 NUM_DATA = f_train['data'].shape[0]
+assert NUM_DATA == 9840
 LENGTH = f_train['data'].shape[1]
+assert LENGTH == 2440
+
 tf.logging.set_verbosity(tf.logging.ERROR)
 if np.isnan(f_train['data']).any():
     print("nan present in training data. Exiting...")
@@ -32,7 +48,6 @@ if np.isnan(f_train['data']).any():
 
 input_data = tf.placeholder(tf.float32, [None, None, 1])
 input_label = tf.placeholder(tf.int32, [None,2])
-#feedlr = tf.placeholder(tf.float32)
 trainable = tf.placeholder(tf.bool)
 
 # loss function operations
@@ -63,7 +78,6 @@ loss_hist = []
 val_loss = []
 #saver.restore(sess, "../model/False_R1noise.ckpt")
 
-num_epoch = 250
 start = datetime.datetime.now()
 batch_size = 64
 real_noise = True  #change here!
@@ -71,8 +85,9 @@ rate = 0.001
 # len(snr) = 50
 low = [0.6,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1,0.1]
 snrs = [5.0,4.0,3.0,2.0,1.7,1.5,1.4,1.3,1.2,1.1,1.0,0.9,0.8,0.7] + [lows for lows in low for i in range(3)]
+num_epoch = int(snr_step * len(snrs))
 for i in range(num_epoch):
-    snr = snrs[i//5]
+    snr = snrs[i//snr_step]
     # global_step.eval(session=sess)
     train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)
     for j in range(len(train_data)):

@@ -3,11 +3,8 @@ import h5py
 from Noiser import Noiser
 FACTOR = 1.0
 
-f_train = h5py.File("data/twoSecondTrain.h5", "r")
-f_test = h5py.File("data/twoSecondTest.h5", "r")
-
-NUM_DATA = f_train['data'].shape[0]
-LENGTH = f_train['data'].shape[1]
+NUM_DATA = 9840
+LENGTH = 2440
 def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None,blankRatio=0.0): 
     batch = []
     label = []
@@ -52,7 +49,7 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None,blankRatio=
 def get_val(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None):
     batch = []
     label = []
-    idx = np.random.choice(f_test['data'].shape[0], k, replace=False)
+    idx = np.random.choice(f['data'].shape[0], k, replace=False)
     noise = Noiser(LENGTH)
 
     for i in range(k):
