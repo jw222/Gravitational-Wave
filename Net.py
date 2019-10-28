@@ -1,17 +1,16 @@
 import tensorflow as tf
 
-#print(receptive_field)
 
 def WaveNet(x, train=True):
-    dilation_rates = [2**i for i in range(10)]
-    receptive_field = sum(dilation_rates)+2
+    dilation_rates = [2 ** i for i in range(10)]
+    receptive_field = sum(dilation_rates) + 2
     # preprocessing causal layer
     x = tf.layers.conv1d(
         inputs=x,
         filters=16,
         kernel_size=2,
         padding="same")
-    
+
     skips = []
 
     for dilation_rate in dilation_rates:
@@ -23,7 +22,7 @@ def WaveNet(x, train=True):
             padding="same",
             dilation_rate=dilation_rate,
             activation=tf.nn.tanh)
-        
+
         # gate
         x_g = tf.layers.conv1d(
             inputs=x,
@@ -32,12 +31,12 @@ def WaveNet(x, train=True):
             padding="same",
             dilation_rate=dilation_rate,
             activation=tf.nn.sigmoid)
-        
+
         # element wise multiplication
-        z = tf.multiply(x_f,x_g)
+        z = tf.multiply(x_f, x_g)
 
         # skip cut to account for receptive field
-        skip = tf.slice(z, [0,receptive_field,0], [-1,-1,-1])
+        skip = tf.slice(z, [0, receptive_field, 0], [-1, -1, -1])
 
         # skip postprocessing
         skip = tf.layers.conv1d(
@@ -45,55 +44,55 @@ def WaveNet(x, train=True):
             filters=32,
             kernel_size=1,
             padding="same")
-        
+
         # residual postprocessing
         z = tf.layers.conv1d(
             inputs=z,
             filters=16,
             kernel_size=1,
             padding="same")
-        
+
         # residual connection
-        x = tf.add(x,z)
-        
+        x = tf.add(x, z)
+
         # skip append
         skips.append(skip)
-    
+
     # add all skip layers and apply activation
     raw = tf.add_n(skips)
     raw = tf.nn.relu(raw)
 
     # postprocessing
     raw = tf.layers.conv1d(
-            inputs=raw,
-            filters=64,
-            kernel_size=1,
-            padding="same",
-            activation=tf.nn.relu)
-    
+        inputs=raw,
+        filters=64,
+        kernel_size=1,
+        padding="same",
+        activation=tf.nn.relu)
+
     # compress to one channel output
     raw = tf.layers.conv1d(
-            inputs=raw,
-            filters=1,
-            kernel_size=1,
-            padding="same")
-    
+        inputs=raw,
+        filters=1,
+        kernel_size=1,
+        padding="same")
+
     raw = tf.layers.flatten(raw)
-    
+
     # get k-highest outputs
     values, indices = tf.nn.top_k(raw, 1024, False)
-    #values = tf.slice(raw, [0,0], [-1,7000])
-    
+    # values = tf.slice(raw, [0,0], [-1,7000])
+
     m1 = values
     m2 = values
     m1 = tf.layers.dense(m1, units=512, activation=tf.nn.relu)
     m2 = tf.layers.dense(m2, units=512, activation=tf.nn.relu)
     m1 = tf.layers.dropout(inputs=m1, rate=0.25, training=train)
     m2 = tf.layers.dropout(inputs=m2, rate=0.25, training=train)
-    #m1 = tf.layers.dense(m1, units=256, activation=tf.nn.relu)
-    #m2 = tf.layers.dense(m2, units=256, activation=tf.nn.relu)
-    #m1 = tf.layers.dropout(inputs=m1, rate=0.1, training=train)
-    #m2 = tf.layers.dropout(inputs=m2, rate=0.1, training=train)
+    m1 = tf.layers.dense(m1, units=256, activation=tf.nn.relu)
+    m2 = tf.layers.dense(m2, units=256, activation=tf.nn.relu)
+    m1 = tf.layers.dropout(inputs=m1, rate=0.1, training=train)
+    m2 = tf.layers.dropout(inputs=m2, rate=0.1, training=train)
     m1 = tf.layers.dense(m1, units=128, activation=tf.nn.relu)
     m2 = tf.layers.dense(m2, units=128, activation=tf.nn.relu)
     m1 = tf.layers.dropout(inputs=m1, rate=0.25, training=train)
@@ -132,7 +131,7 @@ def FixNet(x, train=True):
 
     x = tf.layers.max_pooling1d(x, 4, 4)
     x = tf.nn.relu(x)
-    
+
     x = tf.layers.conv1d(
         inputs=x,
         filters=512,
@@ -146,11 +145,12 @@ def FixNet(x, train=True):
     y = tf.layers.flatten(x)
 
     y = tf.layers.dense(y, units=128, activation=tf.nn.relu)
-    #y = tf.layers.dropout(inputs=y, rate=0.25, training=train)
+    # y = tf.layers.dropout(inputs=y, rate=0.25, training=train)
     y = tf.layers.dense(y, units=64, activation=tf.nn.relu)
     y = tf.layers.dense(y, units=2)
 
     return y
+
 
 def FixNet2(input, train=True):
     ratio = 8
@@ -188,24 +188,24 @@ def FixNet2(input, train=True):
         x = tf.layers.max_pooling1d(x, 4, 4)
 
         return x
-    
+
     # SE layers
     def SELayer(x):
         residual = x
         m = tf.reduce_mean(residual, [1], keepdims=True)
-        m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
+        m = tf.layers.dense(m, units=128 // ratio, activation=tf.nn.relu)
         m = tf.layers.dense(m, units=128, activation=tf.nn.relu)
         m = m * residual
         residual = residual + m
 
         m = tf.reduce_mean(residual, [1], keepdims=True)
-        m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
+        m = tf.layers.dense(m, units=128 // ratio, activation=tf.nn.relu)
         m = tf.layers.dense(m, units=128, activation=tf.nn.relu)
         m = m * residual
         residual = residual + m
 
         m = tf.reduce_mean(residual, [1], keepdims=True)
-        m = tf.layers.dense(m, units=128//ratio, activation=tf.nn.relu)
+        m = tf.layers.dense(m, units=128 // ratio, activation=tf.nn.relu)
         m = tf.layers.dense(m, units=128, activation=tf.nn.relu)
         m = m * residual
         residual = residual + m
@@ -260,6 +260,3 @@ def FixNet2(input, train=True):
     m2 = tf.layers.dense(m2, 1)
 
     return tf.concat([m1, m2], 1)
-
-
-

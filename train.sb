@@ -8,4 +8,4 @@
 
 module load powerai
 
-python3 train.py 3
+python3 train.py
