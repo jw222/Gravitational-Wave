@@ -4,13 +4,12 @@ from Noiser import Noiser
 FACTOR = 1.0
 
 NUM_DATA = 9840
-LENGTH = 2440
-def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None,blankRatio=0.0): 
+def get_batch(f,k,length,real_noise=False,SNR=None,shift=None,blankRatio=0.0): 
     batch = []
     label = []
     idx = np.arange(NUM_DATA)
     np.random.shuffle(idx)
-    noise = Noiser(LENGTH)
+    noise = Noiser(length)
 
     num_batch = NUM_DATA//k
     blankNum = int(blankRatio * k)
@@ -46,11 +45,11 @@ def get_batch(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None,blankRatio=
     label = np.asarray(label)/FACTOR
     return batch, label
 
-def get_val(f,k,length=LENGTH,real_noise=False,SNR=None,shift=None):
+def get_val(f,k,length,real_noise=False,SNR=None,shift=None):
     batch = []
     label = []
     idx = np.random.choice(f['data'].shape[0], k, replace=False)
-    noise = Noiser(LENGTH)
+    noise = Noiser(length)
 
     for i in range(k):
         batch.append(f['data'][idx[i]][:length])

@@ -40,7 +40,6 @@ f_test = h5py.File(test_path, "r")
 NUM_DATA = f_train['data'].shape[0]
 assert NUM_DATA == 9840
 LENGTH = f_train['data'].shape[1]
-assert LENGTH == 2440
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 if np.isnan(f_train['data']).any():
@@ -90,7 +89,7 @@ num_epoch = int(snr_step * len(snrs))
 for i in range(num_epoch):
     snr = snrs[i//snr_step]
     # global_step.eval(session=sess)
-    train_data, train_label = get_batch(f_train, batch_size, real_noise=real_noise, SNR=snr)
+    train_data, train_label = get_batch(f_train, batch_size, length=LENGTH, real_noise=real_noise, SNR=snr)
     for j in range(len(train_data)):
         cur_data = train_data[j]
         cur_label = train_label[j]
@@ -102,7 +101,7 @@ for i in range(num_epoch):
         if j % 10 == 0:
             print('loss: '+str(loss_hist[-1]))
     
-    val_data, val_label = get_val(f_test, batch_size, real_noise=real_noise, SNR=snr)
+    val_data, val_label = get_val(f_test, batch_size, length=LENGTH, real_noise=real_noise, SNR=snr)
     validation = sess.run(loss, feed_dict={input_data: val_data, input_label: val_label, trainable: False})
     val_loss.append(validation)
     print('iter num: '+str(i)+' snr: '+str(snr)+' loss: '+str(loss_hist[-1])+' val_loss: '+str(val_loss[-1]))
