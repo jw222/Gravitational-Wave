@@ -20,12 +20,15 @@ parser.add_argument('--name', dest='name', type=str, default='1on1',
                     help='infer on model')
 parser.add_argument('--file', dest='file', type=bool, default=False,
                     help='whether cast output to a file')
+parser.add_argument('--noise', dest='real_noise', type=bool, default=True,
+					help='whether add real noise or generated noise')
 args = parser.parse_args()
 
 
 model_path = args.model_file
 infer_path = args.infer_file
 test_num = args.name
+real_noise = args.real_noise
 if args.file:
     stdoutOrigin=sys.stdout 
     sys.stdout = open("testOut"+test_num+".txt", "w")

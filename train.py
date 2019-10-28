@@ -24,6 +24,8 @@ parser.add_argument('--file', dest='file', type=bool, default=False,
                     help='whether cast output to a file')
 parser.add_argument('--snr_step', dest='snr_step', type=int, default=10,
                     help='how many steps does each snr train')
+parser.add_argument('--noise', dest='real_noise', type=bool, default=True,
+                    help='whether add real noise or generated noise')
 args = parser.parse_args()
 
 
@@ -31,6 +33,7 @@ train_path = args.train_file
 test_path = args.test_file
 test_num = args.test_num
 snr_step = args.snr_step
+real_noise = args.real_noise
 if args.file:
     stdoutOrigin=sys.stdout 
     sys.stdout = open("testOut"+test_num+".txt", "w")
@@ -80,7 +83,6 @@ val_loss = []
 
 start = datetime.datetime.now()
 batch_size = 64
-real_noise = True  #change here!
 rate = 0.001
 # len(snr) = 50
 low = [0.6,0.5,0.4,0.4,0.3,0.3,0.3,0.2,0.2,0.2,0.1,0.1]
