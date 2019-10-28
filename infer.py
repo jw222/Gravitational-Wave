@@ -16,7 +16,7 @@ parser.add_argument('--model', dest='model_file', type=str, default='test1/model
                     help='the file of the model')
 parser.add_argument('--infer', dest='infer_file', type=str, default='data/oneSecondTest.h5',
                     help='the file of the testing data')
-parser.add_argument('--name', dest='test_num', type=str, default='1on1',
+parser.add_argument('--name', dest='name', type=str, default='1on1',
                     help='infer on model')
 parser.add_argument('--file', dest='file', type=bool, default=False,
                     help='whether cast output to a file')
@@ -34,7 +34,7 @@ f_infer = h5py.File(infer_path, "r")
 LENGTH = f_infer['data'].shape[1]
 
 tf.logging.set_verbosity(tf.logging.ERROR)
-if np.isnan(f_train['data']).any():
+if np.isnan(f_infer['data']).any():
     print("nan present in training data. Exiting...")
     SystemExit
 
@@ -45,19 +45,6 @@ trainable = tf.placeholder(tf.bool)
 # loss function operations
 predictions = WaveNet(input_data, trainable)
 loss = tf.losses.mean_squared_error(input_label, predictions)
-
-# train operation
-global_step = tf.Variable(0, trainable=False)
-learning_rate = tf.train.exponential_decay(learning_rate=0.001, 
-                                           global_step=global_step, 
-                                           decay_steps=NUM_DATA//64, 
-                                           decay_rate=0.96, 
-                                           staircase=True)
-
-optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
-train_op = optimizer.minimize(
-    loss=loss,
-    global_step=global_step)
 
 #initialization
 init = tf.global_variables_initializer()
@@ -182,9 +169,9 @@ def gradual(sess, snrs, f, fig, timeStamps):
 
 
 snrs = np.linspace(5.0,0.1,50)
-plot(sess, snrs, 'infer'+f_infer, test_num+'0.0-1.0s')
-plot(sess, snrs, 'infer'+f_infer, test_num+'0.7-0.9s', shift=[int(LENGTH*0.7),int(LENGTH*0.9)])
-plot(sess, snrs, 'infer'+f_infer, test_num+'0.5-1.0s', shift=[int(LENGTH*0.5),int(LENGTH*1.0)])
+plot(sess, snrs, f_infer, 'infer'+test_num+'0.0-1.0s')
+plot(sess, snrs, f_infer, 'infer'+test_num+'0.7-0.9s', shift=[int(LENGTH*0.7),int(LENGTH*0.9)])
+plot(sess, snrs, f_infer, 'infer'+test_num+'0.5-1.0s', shift=[int(LENGTH*0.5),int(LENGTH*1.0)])
 
 snrs = np.array([5.0,3.0,2.0,1.5,1.0,0.7,0.5,0.3,0.2,0.1])
 timeStamps = np.array([0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
