@@ -1,4 +1,5 @@
 from Noiser import *
+import numpy as np
 
 FACTOR = 1.0
 NUM_DATA = 9840
@@ -81,8 +82,8 @@ def get_val(f, k, length, real_noise=False, snr=None, shift=None):
         batch.append(f['data'][idx[i]][:length])
         label.append(f['m1m2'][idx[i]])
     if shift is not None:
-        batch.T[:shift[0]] = 0
-        batch.T[shift[1]:] = 0
+        np.asarray(batch).T[:shift[0]] = 0
+        np.asarray(batch).T[shift[1]:] = 0
     if snr is not None:
         snrArr = np.random.uniform(low=snr, high=snr, size=1)[0]
         if real_noise is False:

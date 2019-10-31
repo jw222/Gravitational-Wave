@@ -1,9 +1,5 @@
-import tensorflow as tf
-import numpy as np
-import h5py
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-import math
 import sys
 import os
 import argparse
@@ -64,22 +60,22 @@ val_loss = []
 saver.restore(sess, model_path)
 
 
-def plot(sess, snrs, f, fig, shift=None):
-    def showplot(pred, name):
-        test_label = np.asarray(f['m1m2'])
-        error1 = [abs(pred.T[0][i] - test_label.T[0][i]) / test_label.T[0][i] for i in range(len(test_label))]
-        error2 = [abs(pred.T[1][i] - test_label.T[1][i]) / test_label.T[1][i] for i in range(len(test_label))]
+def plot(currSess, snrs, f, fig, shift=None):
+    def showplot(predict, name):
+        testLabel = np.asarray(f['m1m2'])
+        error1 = [abs(predict.T[0][n] - testLabel.T[0][n]) / testLabel.T[0][n] for n in range(len(testLabel))]
+        error2 = [abs(predict.T[1][n] - testLabel.T[1][n]) / testLabel.T[1][n] for n in range(len(testLabel))]
         plt.figure(figsize=(18, 20))
         cm = plt.cm.get_cmap('seismic')
         plt.subplot(211)
-        sc = plt.scatter(test_label.T[0], test_label.T[1], c=error1, vmin=0.0025, vmax=0.75,
+        sc = plt.scatter(testLabel.T[0], testLabel.T[1], c=error1, vmin=0.0025, vmax=0.75,
                          cmap=cm, norm=colors.LogNorm(vmin=np.amin(error1), vmax=np.amax(error1)))
         plt.colorbar(sc)
         plt.xlabel('m1 mass')
         plt.ylabel('m2 mass')
         plt.title(name)
         plt.subplot(212)
-        sc = plt.scatter(test_label.T[0], test_label.T[1], c=error2, vmin=0.0025, vmax=0.75,
+        sc = plt.scatter(testLabel.T[0], testLabel.T[1], c=error2, vmin=0.0025, vmax=0.75,
                          cmap=cm, norm=colors.LogNorm(vmin=np.amin(error2), vmax=np.amax(error2)))
         plt.colorbar(sc)
         plt.xlabel('m1 mass')
@@ -109,8 +105,8 @@ def plot(sess, snrs, f, fig, shift=None):
             test_data = test_data.reshape(1, end - start, 1)
             test_label = f['m1m2'][j].reshape(1, 2)
 
-            pred.append(
-                sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label, trainable: False})[0])
+            pred.append(currSess.run(predictions,
+                                     feed_dict={input_data: test_data, input_label: test_label, trainable: False})[0])
         pred = np.asarray(pred)
         test_label = np.asarray(f['m1m2'])
         m1 = np.mean(np.divide(abs(pred.T[0] - test_label.T[0]), test_label.T[0]))
@@ -134,13 +130,13 @@ def plot(sess, snrs, f, fig, shift=None):
     plt.savefig(fig + '.png')
 
 
-def gradual(sess, snrs, f, fig, timeStamps):
+def gradual(currSess, snrs, f, fig, times):
     noise = Noiser(LENGTH)
     for i in range(len(snrs)):
         print("\n\nsnr is: ", snrs[i])
         m1s = []
         m2s = []
-        for stop in timeStamps:
+        for stop in times:
             pred = []
             stop = int(stop * LENGTH)
             print("\n\nstop is: ", stop)
@@ -155,8 +151,8 @@ def gradual(sess, snrs, f, fig, timeStamps):
                 test_data = test_data.reshape(1, LENGTH, 1)
                 test_label = f['m1m2'][j].reshape(1, 2)
                 pred.append(
-                    sess.run(predictions, feed_dict={input_data: test_data, input_label: test_label, trainable: False})[
-                        0])
+                    currSess.run(predictions,
+                                 feed_dict={input_data: test_data, input_label: test_label, trainable: False})[0])
 
             pred = np.asarray(pred)
             test_label = np.asarray(f['m1m2'])
@@ -168,8 +164,8 @@ def gradual(sess, snrs, f, fig, timeStamps):
         m1s = np.asarray(m1s)
         m2s = np.asarray(m2s)
         plt.figure()
-        plt.plot(timeStamps, m1s * 100)
-        plt.plot(timeStamps, m2s * 100)
+        plt.plot(times, m1s * 100)
+        plt.plot(times, m2s * 100)
         plt.legend(['m1', 'm2'], loc=1)
         plt.xlabel('timeStamps in seconds')
         plt.ylabel('Relative Error')
@@ -178,13 +174,13 @@ def gradual(sess, snrs, f, fig, timeStamps):
         plt.savefig(fig + str(snrs[i]) + '.png')
 
 
-snrs = np.linspace(5.0, 0.1, 50)
-plot(sess, snrs, f_infer, 'infer' + test_num + '0.0-1.0s')
-plot(sess, snrs, f_infer, 'infer' + test_num + '0.7-0.9s', shift=[int(LENGTH * 0.7), int(LENGTH * 0.9)])
-plot(sess, snrs, f_infer, 'infer' + test_num + '0.5-1.0s', shift=[int(LENGTH * 0.5), int(LENGTH * 1.0)])
+snrArr = np.linspace(5.0, 0.1, 50)
+plot(sess, snrArr, f_infer, 'infer' + test_num + '0.0-1.0s')
+plot(sess, snrArr, f_infer, 'infer' + test_num + '0.7-0.9s', shift=[int(LENGTH * 0.7), int(LENGTH * 0.9)])
+plot(sess, snrArr, f_infer, 'infer' + test_num + '0.5-1.0s', shift=[int(LENGTH * 0.5), int(LENGTH * 1.0)])
 
-snrs = np.array([5.0, 3.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1])
+snrArr = np.array([5.0, 3.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1])
 timeStamps = np.array([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
-gradual(sess, snrs, f_infer, 'infer' + test_num + '-', timeStamps)
+gradual(sess, snrArr, f_infer, 'infer' + test_num + '-', timeStamps)
 
-plot(sess, snrs, f_infer, test_num + 'zeroInput', shift=[0, 0])
+plot(sess, snrArr, f_infer, test_num + 'zeroInput', shift=[0, 0])

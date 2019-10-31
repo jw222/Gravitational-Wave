@@ -103,7 +103,7 @@ def WaveNet(x, train=True):
     return tf.concat([m1, m2], 1)
 
 
-def FixNet(x, train=True):
+def FixNet(x):
     x = tf.layers.conv1d(
         inputs=x,
         filters=64,
@@ -145,53 +145,52 @@ def FixNet(x, train=True):
     y = tf.layers.flatten(x)
 
     y = tf.layers.dense(y, units=128, activation=tf.nn.relu)
-    # y = tf.layers.dropout(inputs=y, rate=0.25, training=train)
     y = tf.layers.dense(y, units=64, activation=tf.nn.relu)
     y = tf.layers.dense(y, units=2)
 
     return y
 
 
-def FixNet2(input, train=True):
+def FixNet2(x, train=True):
     ratio = 8
 
     # Three conv1d layers
-    def conv1ds(x):
-        x = tf.layers.conv1d(
-            inputs=x,
+    def conv1ds(convInput):
+        convInput = tf.layers.conv1d(
+            inputs=convInput,
             filters=64,
             kernel_size=16,
             dilation_rate=2,
             padding="valid",
             activation=tf.nn.relu)
 
-        x = tf.layers.max_pooling1d(x, 4, 4)
+        convInput = tf.layers.max_pooling1d(convInput, 4, 4)
 
-        x = tf.layers.conv1d(
-            inputs=x,
+        convInput = tf.layers.conv1d(
+            inputs=convInput,
             filters=128,
             kernel_size=16,
             dilation_rate=2,
             padding="valid",
             activation=tf.nn.relu)
 
-        x = tf.layers.max_pooling1d(x, 4, 4)
+        convInput = tf.layers.max_pooling1d(convInput, 4, 4)
 
-        x = tf.layers.conv1d(
-            inputs=x,
+        convInput = tf.layers.conv1d(
+            inputs=convInput,
             filters=128,
             kernel_size=16,
             dilation_rate=2,
             padding="valid",
             activation=tf.nn.relu)
 
-        x = tf.layers.max_pooling1d(x, 4, 4)
+        convInput = tf.layers.max_pooling1d(convInput, 4, 4)
 
-        return x
+        return convInput
 
     # SE layers
-    def SELayer(x):
-        residual = x
+    def SELayer(SEInput):
+        residual = SEInput
         m = tf.reduce_mean(residual, [1], keepdims=True)
         m = tf.layers.dense(m, units=128 // ratio, activation=tf.nn.relu)
         m = tf.layers.dense(m, units=128, activation=tf.nn.relu)
@@ -213,29 +212,29 @@ def FixNet2(input, train=True):
         return residual
 
     # Highway
-    def highway(x):
+    def highway(hwInput):
         h = tf.layers.conv1d(
-            inputs=x,
+            inputs=hwInput,
             filters=128,
             kernel_size=4,
             padding="same",
             activation=tf.nn.relu)
         t = tf.layers.conv1d(
-            inputs=x,
+            inputs=hwInput,
             filters=128,
             kernel_size=4,
             padding="same",
             activation=tf.nn.relu)
 
-        x = h * t + (1 - t) * x
+        hwInput = h * t + (1 - t) * hwInput
 
-        return x
+        return hwInput
 
     # Main layers
-    input = conv1ds(input)
+    x = conv1ds(x)
 
-    residual1 = input
-    residual2 = input
+    residual1 = x
+    residual2 = x
     residual1 = SELayer(residual1)
     residual2 = SELayer(residual2)
     m1 = residual1
