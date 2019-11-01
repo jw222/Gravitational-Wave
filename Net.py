@@ -5,6 +5,7 @@ def WaveNet(x, train=True):
     dilation_rates = [2 ** i for i in range(10)]
     receptive_field = sum(dilation_rates) + 2
 
+    x = tf.batch_normalization(inputs=x, training=train)
     # preprocessing causal layer
     x = tf.layers.conv1d(
         inputs=x,
@@ -82,7 +83,7 @@ def WaveNet(x, train=True):
 
     # get k-highest outputs
     values, indices = tf.nn.top_k(raw, 1024, False)
-    # values = tf.slice(raw, [0,0], [-1,7000])
+    values = tf.batch_normalization(inputs=values, training=train)
 
     m1 = values
     m2 = values
@@ -241,7 +242,7 @@ def FixNet2(x, train=True):
     m1 = residual1
     m2 = residual2
 
-    for _ in range(30):
+    for i in range(30):
         m1 = highway(m1)
         m2 = highway(m2)
 

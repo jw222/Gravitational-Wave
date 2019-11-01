@@ -64,6 +64,7 @@ learning_rate = tf.train.exponential_decay(learning_rate=0.001,
                                            staircase=True)
 
 optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
+update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 train_op = optimizer.minimize(
     loss=loss,
     global_step=global_step)
@@ -92,10 +93,10 @@ for i in range(num_epoch):
     for j in range(len(train_data)):
         cur_data = train_data[j]
         cur_label = train_label[j]
-        _, loss_val = sess.run([train_op, loss],
-                               feed_dict={input_data: cur_data,
-                                          input_label: cur_label,
-                                          trainable: True})
+        _, _, loss_val = sess.run([train_op, update_ops, loss],
+                                  feed_dict={input_data: cur_data,
+                                             input_label: cur_label,
+                                             trainable: True})
         loss_hist.append(loss_val)
         if j % 10 == 0:
             print('loss: ' + str(loss_hist[-1]))
