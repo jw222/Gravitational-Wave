@@ -86,6 +86,9 @@ def plot(currSess, snrs, f, fig, shift=None):
     # testing without shift
     start = 0
     end = LENGTH
+    if shift is not None:
+        start = shift[0]
+        end = shift[1]
     print("\n\nshift is: ", shift)
     noise = Noiser(LENGTH)
     m1s = []
@@ -95,9 +98,11 @@ def plot(currSess, snrs, f, fig, shift=None):
         for j in range(len(f['data'])):
             test_data = f['data'][j][start:end].reshape(1, end - start)
             test_data = noise.add_shift(test_data)
+            '''
             if shift is not None:
                 test_data[0][:shift[0]] = 0
                 test_data[0][shift[1]:] = 0
+            '''
             if real_noise is False:
                 test_data = noise.add_noise(input=test_data, SNR=snrs[i])
             else:
@@ -175,12 +180,14 @@ def gradual(currSess, snrs, f, fig, times):
 
 
 snrArr = np.linspace(5.0, 0.1, 50)
-plot(sess, snrArr, f_infer, 'infer' + test_num + '0.0-1.0s')
-plot(sess, snrArr, f_infer, 'infer' + test_num + '0.7-0.9s', shift=[int(LENGTH * 0.7), int(LENGTH * 0.9)])
+plot(sess, snrArr, f_infer, 'infer' + test_num + '0.0-0.5s', shift=[int(LENGTH * 0.0), int(LENGTH * 0.5)])
+plot(sess, snrArr, f_infer, 'infer' + test_num + '0.25-0.75s', shift=[int(LENGTH * 0.25), int(LENGTH * 0.75)])
 plot(sess, snrArr, f_infer, 'infer' + test_num + '0.5-1.0s', shift=[int(LENGTH * 0.5), int(LENGTH * 1.0)])
 
+'''
 snrArr = np.array([5.0, 3.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1])
 timeStamps = np.array([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 gradual(sess, snrArr, f_infer, 'infer' + test_num + '-', timeStamps)
 
 plot(sess, snrArr, f_infer, test_num + 'zeroInput', shift=[0, 0])
+'''
