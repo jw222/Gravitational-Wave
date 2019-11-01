@@ -98,7 +98,7 @@ for i in range(num_epoch):
                                              input_label: cur_label,
                                              trainable: True})
         loss_hist.append(loss_val)
-        if j % 10 == 0:
+        if j % 10 == 0: 
             print('loss: ' + str(loss_hist[-1]))
 
     val_data, val_label = get_val(f_test, batch_size, length=LENGTH, real_noise=real_noise, snr=snr)
