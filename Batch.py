@@ -1,6 +1,7 @@
 from Noiser import *
 import numpy as np
 
+keyStr = 'data'
 FACTOR = 1.0
 NUM_DATA = 9840
 
@@ -39,7 +40,7 @@ def get_batch(f, k, length, real_noise=False, snr=None, shift=None):
         cur_batch = []
         cur_label = []
         for j in range(k):
-            cur_batch.append(f['data'][idx[k * i + j]][:length])
+            cur_batch.append(f[keyStr][idx[k * i + j]][:length])
             cur_label.append(f['m1m2'][idx[k * i + j]])
         cur_batch = noise.add_shift(cur_batch)
         if shift is not None:
@@ -74,12 +75,12 @@ def get_val(f, k, length, real_noise=False, snr=None, shift=None):
     label = []
 
     # constant initialization
-    idx = np.random.choice(f['data'].shape[0], k, replace=False)
+    idx = np.random.choice(f[keyStr].shape[0], k, replace=False)
     noise = Noiser(length)
 
     # loop to get batch
     for i in range(k):
-        batch.append(f['data'][idx[i]][:length])
+        batch.append(f[keyStr][idx[i]][:length])
         label.append(f['m1m2'][idx[i]])
     if shift is not None:
         np.asarray(batch).T[:shift[0]] = 0

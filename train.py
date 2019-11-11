@@ -7,6 +7,7 @@ import argparse
 from Net import *
 from Batch import *
 
+keyStr = 'data'
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
 # parsing argument
@@ -38,12 +39,12 @@ if args.file:
 # check nan
 f_train = h5py.File(train_path, "r")
 f_test = h5py.File(test_path, "r")
-NUM_DATA = f_train['data'].shape[0]
+NUM_DATA = f_train[keyStr].shape[0]
 assert NUM_DATA == 9840
-LENGTH = f_train['data'].shape[1]
+LENGTH = f_train[keyStr].shape[1]
 
 tf.logging.set_verbosity(tf.logging.ERROR)
-if np.isnan(f_train['data']).any():
+if np.isnan(f_train[keyStr]).any():
     print("nan present in training data. Exiting...")
     sys.exit()
 
@@ -159,8 +160,8 @@ def plot(currSess, currSNR, f, fig, shift=None):
     m2s = []
     for i in range(len(currSNR)):
         pred = []
-        for idx in range(len(f['data'])):
-            test_data = f['data'][idx][currStart:currEnd].reshape(1, currEnd - currStart)
+        for idx in range(len(f[keyStr])):
+            test_data = f[keyStr][idx][currStart:currEnd].reshape(1, currEnd - currStart)
             test_data = noise.add_shift(test_data)
             if shift is not None:
                 test_data[0][:shift[0]] = 0
@@ -207,8 +208,8 @@ def gradual(currSess, currSnr, f, fig, times):
             pred = []
             stop = int(stop * LENGTH)
             print("\n\nstop is: ", stop)
-            for idx in range(len(f['data'])):
-                test_data = f['data'][idx].reshape(1, LENGTH)
+            for idx in range(len(f[keyStr])):
+                test_data = f[keyStr][idx].reshape(1, LENGTH)
                 test_data = noise.add_shift(test_data)
                 test_data[0][stop:] = 0
                 if real_noise is False:
