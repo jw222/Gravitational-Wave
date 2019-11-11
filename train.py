@@ -93,12 +93,12 @@ for i in range(num_epoch):
     for j in range(len(train_data)):
         cur_data = train_data[j]
         cur_label = train_label[j]
-        _, _, loss_val = sess.run([train_op, update_ops, loss],
-                                  feed_dict={input_data: cur_data,
-                                             input_label: cur_label,
-                                             trainable: True})
+        _, loss_val = sess.run([train_op, loss],
+                               feed_dict={input_data: cur_data,
+                                          input_label: cur_label,
+                                          trainable: True})
         loss_hist.append(loss_val)
-        if j % 10 == 0: 
+        if j % 10 == 0:
             print('loss: ' + str(loss_hist[-1]))
 
     val_data, val_label = get_val(f_test, batch_size, length=LENGTH, real_noise=real_noise, snr=snr)

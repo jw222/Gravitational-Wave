@@ -106,7 +106,7 @@ def plot(currSess, snrs, f, fig, shift=None):
             test_label = f['m1m2'][j].reshape(1, 2)
 
             pred.append(currSess.run(predictions,
-                                     feed_dict={input_data: test_data, input_label: test_label, trainable: True})[0])
+                                     feed_dict={input_data: test_data, input_label: test_label, trainable: False})[0])
         pred = np.asarray(pred)
         test_label = np.asarray(f['m1m2'])
         m1 = np.mean(np.divide(abs(pred.T[0] - test_label.T[0]), test_label.T[0]))

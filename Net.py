@@ -5,7 +5,6 @@ def WaveNet(x, train=True):
     dilation_rates = [2 ** i for i in range(10)]
     receptive_field = sum(dilation_rates) + 2
 
-    x = tf.layers.batch_normalization(inputs=x, training=train)
     # preprocessing causal layer
     x = tf.layers.conv1d(
         inputs=x,
@@ -83,7 +82,6 @@ def WaveNet(x, train=True):
 
     # get k-highest outputs
     values, indices = tf.nn.top_k(raw, 1024, False)
-    values = tf.layers.batch_normalization(inputs=values, training=train)
 
     m1 = values
     m2 = values
