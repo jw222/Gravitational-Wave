@@ -40,7 +40,6 @@ if args.file:
 f_train = h5py.File(train_path, "r")
 f_test = h5py.File(test_path, "r")
 NUM_DATA = f_train[keyStr].shape[0]
-assert NUM_DATA == 9840
 LENGTH = f_train[keyStr].shape[1]
 
 tf.logging.set_verbosity(tf.logging.ERROR)
