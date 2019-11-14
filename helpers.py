@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from noiser import *
 keyStr = 'data'
+real_noise = True
 
 
 def getError(currSess, snr, f, length, shift=None):
