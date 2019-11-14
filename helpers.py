@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+from noiser import *
 keyStr = 'data'
 
 
