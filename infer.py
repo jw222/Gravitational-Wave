@@ -196,7 +196,7 @@ def window(currSess, snrs, f, fig, step):
 
 
 snrArr = np.linspace(5.0, 0.1, 50)
-window(sess, snrArr, f_infer, 'window' + test_num + '-', 8192*8)
+window(sess, snrArr, f_infer, 'window' + test_num + '-', 8192)
 plot(sess, snrArr, f_infer, 'infer' + test_num + '0.0-1.0s')
 plot(sess, snrArr, f_infer, 'infer' + test_num + '0.7-0.9s', shift=[int(LENGTH * 0.7), int(LENGTH * 0.9)])
 plot(sess, snrArr, f_infer, 'infer' + test_num + '0.5-1.0s', shift=[int(LENGTH * 0.5), int(LENGTH * 1.0)])

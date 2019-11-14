@@ -95,3 +95,6 @@ def get_val(f, k, length, real_noise=False, snr=None, shift=None):
     batch = np.asarray(batch).reshape(k, length, 1)
     label = np.asarray(label) / FACTOR
     return batch, label
+
+
+def get_classify_batch(f, k, length, real_noise, snr, )
