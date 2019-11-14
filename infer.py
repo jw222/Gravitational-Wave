@@ -182,8 +182,8 @@ def window(currSess, snrs, f, fig, step):
         m1s = np.asarray(m1s)
         m2s = np.asarray(m2s)
 
-        x_axis = np.arange(0, length - 8192 + step, step)
-        x_axis /= 8192
+        x_axis = np.arange(0, length - 8192 + step, step, dtype=np.float64)
+        x_axis /= 8192.
         plt.figure()
         plt.plot(x_axis, m1s * 100)
         plt.plot(x_axis, m2s * 100)
