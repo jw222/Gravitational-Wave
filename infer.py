@@ -85,7 +85,7 @@ def getError(currSess, snr, f, length, shift=None):
     test_label = np.asarray(f['m1m2'])
     m1 = np.mean(np.divide(abs(pred.T[0] - test_label.T[0]), test_label.T[0]))
     m2 = np.mean(np.divide(abs(pred.T[1] - test_label.T[1]), test_label.T[1]))
-    return m1, m2
+    return m1, m2, pred
 
 
 def triPlot(predict, name, f):
@@ -118,7 +118,7 @@ def plot(currSess, snrs, f, fig, shift=None):
     m1s = []
     m2s = []
     for snr in snrs:
-        m1, m2 = getError(currSess, snr, f, length, shift)
+        m1, m2, pred = getError(currSess, snr, f, length, shift)
         m1s.append(m1)
         m2s.append(m2)
         print('SNR: ' + str(snr) + ' -- m1: ' + "{0:.5%}".format(m1) + ' m2: ' + "{0:.5%}".format(m2))
@@ -147,7 +147,7 @@ def gradual(currSess, snrs, f, fig, times):
         m2s = []
         for stop in times:
             shift = [0, int(stop * length)]
-            m1, m2 = getError(currSess, snr, f, length, shift)
+            m1, m2, _ = getError(currSess, snr, f, length, shift)
             m1s.append(m1)
             m2s.append(m2)
             print('stop: ' + str(shift) + ' -- m1: ' + "{0:.5%}".format(m1) + ' m2: ' + "{0:.5%}".format(m2))
@@ -167,7 +167,6 @@ def gradual(currSess, snrs, f, fig, times):
 
 def window(currSess, snrs, f, fig, step):
     length = len(f[keyStr][0])
-    num_secs = length // 8192
     num_shift = (length - 8192) // step + 1
     for snr in snrs:
         print("\n\nsnr is: ", snr)
@@ -176,7 +175,7 @@ def window(currSess, snrs, f, fig, step):
         for i in range(num_shift):
             shift = [i * step, i * step + 8192]
             print("\nwindow is: ", shift)
-            m1, m2 = getError(currSess, snr, f, length, shift)
+            m1, m2, _ = getError(currSess, snr, f, length, shift)
             m1s.append(m1)
             m2s.append(m2)
             print('window: ' + str(shift) + ' -- m1: ' + "{0:.5%}".format(m1) + ' m2: ' + "{0:.5%}".format(m2))
