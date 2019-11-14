@@ -122,7 +122,7 @@ def plot(currSess, snrs, f, fig, shift=None):
         m1s.append(m1)
         m2s.append(m2)
         print('SNR: ' + str(snr) + ' -- m1: ' + "{0:.5%}".format(m1) + ' m2: ' + "{0:.5%}".format(m2))
-        if i == 40:
+        if 0.79 < snr < 0.81:
             triPlot(pred, fig + 'triSNR-' + str(snr), f)
 
     m1s = np.asarray(m1s)
