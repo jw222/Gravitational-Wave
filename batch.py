@@ -1,4 +1,4 @@
-from Noiser import *
+from noiser import *
 import numpy as np
 
 keyStr = 'data'
