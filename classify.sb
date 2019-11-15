@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name="class"
-#SBATCH --output="bbhR.%j.%N.out"
-#SBATCH --error="bbhR.%j.%N.err"
+#SBATCH --output="class.%j.%N.out"
+#SBATCH --error="class.%j.%N.err"
 #SBATCH --partition=gpux1
 #SBATCH --time=72
 

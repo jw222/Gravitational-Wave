@@ -154,7 +154,7 @@ def get_classify_batch(f, k, length, real_noise, snr):
     return batch, label
 
 
-def get_classify_val(f, k, length, real_noise, snr):
+def get_classifier_val(f, k, length, real_noise, snr):
     """
     :param f: hdf5 file object to get file
     :param k: batch size
