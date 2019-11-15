@@ -143,8 +143,8 @@ def get_classify_batch(f, k, length, real_noise, snr):
             cur_batch = noise.add_real_noise(input=cur_batch, SNR=snrArr[i])
         idxCurr = np.arange(k)
         np.random.shuffle(idxCurr)
-        cur_batch = [batch[a] for a in idxCurr]
-        cur_label = [label[a] for a in idxCurr]
+        cur_batch = [cur_batch[a] for a in idxCurr]
+        cur_label = [cur_label[a] for a in idxCurr]
         batch.append(cur_batch)
         label.append(cur_label)
 
