@@ -134,6 +134,7 @@ def get_classify_batch(f, k, length, real_noise, snr):
                 cur_batch.append(np.zeros(length))
                 cur_label.append([1, 0])
                 counter += 1
+                continue
             cur_batch.append(f[keyStr][idx[k * i + j]][:length])
             cur_label.append([0, 1])
         cur_batch = noise.add_shift(cur_batch)
@@ -179,6 +180,7 @@ def get_classifier_val(f, k, length, real_noise, snr):
             batch.append(np.zeros(length))
             label.append([1, 0])
             counter += 1
+            continue
         batch.append(f[keyStr][idx[i]][:length])
         label.append([0, 1])
 
@@ -189,10 +191,6 @@ def get_classifier_val(f, k, length, real_noise, snr):
         batch = noise.add_real_noise(input=batch, SNR=snrArr)
     batch = noise.add_shift(batch)
 
-    idxCurr = np.arange(k)
-    np.random.shuffle(idxCurr)
-    batch = [batch[a] for a in idxCurr]
-    label = [label[a] for a in idxCurr]
     batch = np.asarray(batch).reshape(k, length, 1)
     label = np.asarray(label)
     return batch, label
