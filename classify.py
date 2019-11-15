@@ -46,7 +46,7 @@ if args.file:
     stdoutOrigin = sys.stdout
     sys.stdout = open("testOut" + test_num + ".txt", "w")
 
-input_data = tf.placeholder(tf.float32, [None, 8192, 1])
+input_data = tf.placeholder(tf.float32, [None, None, 1])
 input_label = tf.placeholder(tf.int32, [None, 2])
 trainable = tf.placeholder(tf.bool)
 

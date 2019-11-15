@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name="fix"
-#SBATCH --output="fix.%j.%N.out"
-#SBATCH --error="fix.%j.%N.err"
+#SBATCH --job-name="class"
+#SBATCH --output="class.%j.%N.out"
+#SBATCH --error="class.%j.%N.err"
 #SBATCH --partition=gpux1
 #SBATCH --time=72
 
