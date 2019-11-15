@@ -150,19 +150,14 @@ def compute_accuracy(currSess, currSNR, f, length=LENGTH, shift=None):
         pred.append(np.argmax(curr))
 
     pred = np.asarray(pred)
-    accuracy = np.mean(pred == labels)
-    tp = np.sum([yhats[i] == dev_labels[i] and yhats[i] == 1 for i in range(len(dev_labels))])
-    precision = tp / np.sum([yhats[i] == 1 for i in range(len(dev_labels))])
-    recall = tp / (np.sum([yhats[i] != dev_labels[i] and yhats[i] == 0 for i in range(len(dev_labels))]) + tp)
-    f1 = 2 * (precision * recall) / (precision + recall)
-
-    return accuracy, f1, precision, recall
+    accuracies = np.mean(pred == labels)
+    return accuracies
 
 
 snrArr = np.linspace(5.0, 0.1, 50)
 acc = []
 for snr in snrArr:
-    accuracy, _, _, _ = compute_accuracy(sess, snr, f_test)
+    accuracy = compute_accuracy(sess, snr, f_test)
     acc.append(accuracy)
 plt.figure()
 plt.plot(np.flip(snrArr, 0), np.flip(acc, 0))
@@ -179,7 +174,7 @@ for snr in snrArr:
     acc = []
     for stop in timeStamps:
         currShift = [0, int(stop * LENGTH)]
-        accuracy, _, _, _ = compute_accuracy(sess, snr, f_test, shift=currShift)
+        accuracy = compute_accuracy(sess, snr, f_test, shift=currShift)
         acc.append(accuracy)
     plt.figure()
     plt.plot(timeStamps * num_secs, acc)
