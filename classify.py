@@ -52,7 +52,7 @@ trainable = tf.placeholder(tf.bool)
 
 # loss function operations
 predictions = Classifier(input_data, trainable)
-loss = tf.losses.softmax_cross_entropy(input_label, predictions)
+loss = tf.losses.sigmoid_cross_entropy(input_label, predictions)
 
 # train operation
 global_step = tf.Variable(0, trainable=False)
