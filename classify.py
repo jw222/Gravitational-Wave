@@ -51,7 +51,7 @@ input_label = tf.placeholder(tf.int32, [None, 2])
 trainable = tf.placeholder(tf.bool)
 
 # loss function operations
-predictions = FixNet(input_data, trainable)
+predictions = Classifier(input_data, trainable)
 loss = tf.losses.sigmoid_cross_entropy(input_label, predictions)
 
 # train operation
