@@ -117,34 +117,32 @@ plt.ylabel('loss')
 plt.savefig(test_num + 'testLoss.png')
 
 '''
-def compute_accuracy(currSess, currSNR, f, length=LENGTH, shift=None):
-    noise = Noiser(length)
+def compute_accuracy(currSess, currSNR, f, length, shift):
     pred = []
     labels = []
+    new_length = shift[1] - shift[0]
+    noise = Noiser(new_length)
     for j in range(len(f[keyStr])):
-        test_data = f[keyStr][j].reshape(1, length)
-        test_data = noise.add_shift(test_data)
-        if shift is not None:
-            test_data[0] = test_data[0][shift[0]:shift[1]]
+        temp_test = f[keyStr][j].reshape(1, length)
+        temp_test = noise.add_shift(temp_test)
+        test_data = np.array(temp_test[0][shift[0]:shift[1]]).reshape(1, new_length)
         if real_noise is False:
             test_data = noise.add_noise(input=test_data, SNR=currSNR)
         else:
             test_data = noise.add_real_noise(input=test_data, SNR=currSNR)
-        test_data = test_data.reshape(1, length, 1)
+        test_data = test_data.reshape(1, new_length, 1)
         labels.append(1)
         curr = currSess.run(predictions, feed_dict={input_data: test_data, trainable: False})[0]
         pred.append(np.argmax(curr))
 
     # use same number of noise as signal
     for _ in range(len(f[keyStr])):
-        test_data = np.zeros(length).reshape(1, length)
-        if shift is not None:
-            test_data[0] = test_data[0][shift[0]:shift[1]]
+        test_data = np.zeros(new_length).reshape(1, new_length)
         if real_noise is False:
             test_data = noise.add_noise(input=test_data, SNR=currSNR)
         else:
             test_data = noise.add_real_noise(input=test_data, SNR=currSNR)
-        test_data = test_data.reshape(1, length, 1)
+        test_data = test_data.reshape(1, new_length, 1)
         labels.append(0)
         curr = currSess.run(predictions, feed_dict={input_data: test_data, trainable: False})[0]
         pred.append(np.argmax(curr))
@@ -157,7 +155,7 @@ def compute_accuracy(currSess, currSNR, f, length=LENGTH, shift=None):
 snrArr = np.linspace(5.0, 0.1, 50)
 acc = []
 for snr in snrArr:
-    accuracy = compute_accuracy(sess, snr, f_test)
+    accuracy = compute_accuracy(sess, snr, f_test, length=LENGTH, shift=[0, LENGTH])
     acc.append(accuracy)
 plt.figure()
 plt.plot(np.flip(snrArr, 0), np.flip(acc, 0))
@@ -174,7 +172,7 @@ for snr in snrArr:
     acc = []
     for stop in timeStamps:
         currShift = [0, int(stop * LENGTH)]
-        accuracy = compute_accuracy(sess, snr, f_test, shift=currShift)
+        accuracy = compute_accuracy(sess, snr, f_test, length=LENGTH, shift=currShift)
         acc.append(accuracy)
     plt.figure()
     plt.plot(timeStamps * num_secs, acc)
