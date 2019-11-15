@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors
 import datetime
 import sys
 import os
@@ -81,7 +80,7 @@ snrs = [5.0, 4.0, 3.0, 2.0, 1.7, 1.5, 1.4, 1.3, 1.2, 1.1, 1.0, 0.9, 0.8, 0.7] + 
 num_epoch = int(snr_step * len(snrs))
 for i in range(num_epoch):
     snr = snrs[i // snr_step]
-    train_data, train_label = get_batch(f_train, batch_size, length=LENGTH, real_noise=real_noise, snr=snr)
+    train_data, train_label = get_classify_batch(f_train, batch_size, length=LENGTH, real_noise=real_noise, snr=snr)
     for j in range(len(train_data)):
         cur_data = train_data[j]
         cur_label = train_label[j]
@@ -93,7 +92,7 @@ for i in range(num_epoch):
         if j % 10 == 0:
             print('loss: ' + str(loss_hist[-1]))
 
-    val_data, val_label = get_val(f_test, batch_size, length=LENGTH, real_noise=real_noise, snr=snr)
+    val_data, val_label = get_classifier_val(f_test, batch_size, length=LENGTH, real_noise=real_noise, snr=snr)
     validation = sess.run(loss, feed_dict={input_data: val_data, input_label: val_label, trainable: False})
     val_loss.append(validation)
     print('iter num: ' + str(i) + ' snr: ' + str(snr) + ' loss: ' + str(loss_hist[-1]) + ' val_loss: ' + str(
@@ -103,7 +102,7 @@ end = datetime.datetime.now()
 print('time: ' + str(end - start))
 
 # save model
-save_path = saver.save(sess, '../model/' + str(real_noise) + '_R' + test_num + 'noise.ckpt')
+save_path = saver.save(sess, '../model/' + test_num + 'Classifier.ckpt')
 print("Model saved in path: %s" % save_path)
 step = NUM_DATA // batch_size
 axis = np.arange(step - 1, len(loss_hist), step)
@@ -115,3 +114,64 @@ plt.title('loss history--total time: ' + str(end - start))
 plt.xlabel('epochs')
 plt.ylabel('loss')
 plt.savefig(test_num + 'testLoss.png')
+
+
+def compute_accuracy(currSess, currSNR, f, shift=None):
+    noise = Noiser(LENGTH)
+    pred = []
+    labels = []
+    for j in range(len(f[keyStr])):
+        test_data = f[keyStr][j].reshape(1, length)
+        test_data = noise.add_shift(test_data)
+        if shift is not None:
+            test_data[0][:shift[0]] = 0
+            test_data[0][shift[1]:] = 0
+            # test_data[0] = test_data[0][shift[0]:shift[1]]
+        if real_noise is False:
+            test_data = noise.add_noise(input=test_data, SNR=currSNR)
+        else:
+            test_data = noise.add_real_noise(input=test_data, SNR=currSNR)
+        test_data = test_data.reshape(1, length, 1)
+        labels.append(1)
+        curr = currSess.run(predictions, feed_dict={input_data: test_data, trainable: False})[0]
+        pred.append(np.argmax(curr))
+
+    # use same number of noise as signal
+    for _ in range(len(f[keyStr])):
+        test_data = np.zeros(length).reshape(1, length)
+        if shift is not None:
+            test_data[0][:shift[0]] = 0
+            test_data[0][shift[1]:] = 0
+            # test_data[0] = test_data[0][shift[0]:shift[1]]
+        if real_noise is False:
+            test_data = noise.add_noise(input=test_data, SNR=currSNR)
+        else:
+            test_data = noise.add_real_noise(input=test_data, SNR=currSNR)
+        test_data = test_data.reshape(1, length, 1)
+        labels.append(0)
+        curr = currSess.run(predictions, feed_dict={input_data: test_data, trainable: False})[0]
+        pred.append(np.argmax(curr))
+
+    pred = np.asarray(pred)
+    accuracy = np.mean(pred == labels)
+    tp = np.sum([yhats[i] == dev_labels[i] and yhats[i] == 1 for i in range(len(dev_labels))])
+    precision = tp / np.sum([yhats[i] == 1 for i in range(len(dev_labels))])
+    recall = tp / (np.sum([yhats[i] != dev_labels[i] and yhats[i] == 0 for i in range(len(dev_labels))]) + tp)
+    f1 = 2 * (precision * recall) / (precision + recall)
+
+    return accuracy, f1, precision, recall
+
+
+snrArr = np.linspace(5.0, 0.1, 50)
+acc = []
+for snr in snrArr:
+    accuracy, _, _, _ = compute_accuracy(sess, snr, f_test)
+    acc.append(accuracy)
+plt.figure()
+plt.plot(np.flip(snrArr, 0), np.flip(acc, 0))
+plt.xlabel('SNR')
+plt.ylabel('Accuracy')
+plt.title('Accuracy with SNR')
+plt.grid(True)
+plt.savefig(test_num + 'OverallAccuracy.png')
+

@@ -67,14 +67,15 @@ def getError(currSess, snr, f, length, shift=None):
     for j in range(len(f[keyStr])):
         test_data = f[keyStr][j].reshape(1, length)
         test_data = noise.add_shift(test_data)
-        if shift is not None:
-            test_data[0][:shift[0]] = 0
-            test_data[0][shift[1]:] = 0
-            # test_data[0] = test_data[0][shift[0]:shift[1]]
         if real_noise is False:
             test_data = noise.add_noise(input=test_data, SNR=snr)
         else:
             test_data = noise.add_real_noise(input=test_data, SNR=snr)
+        if shift is not None:
+            test_data[0][:shift[0]] = 0
+            test_data[0][shift[1]:] = 0
+            # test_data[0] = test_data[0][shift[0]:shift[1]]
+
         test_data = test_data.reshape(1, length, 1)
         test_label = f['m1m2'][j].reshape(1, 2)
         pred.append(
@@ -188,7 +189,7 @@ def window(currSess, snrs, f, fig, step):
         plt.plot(x_axis, m1s * 100)
         plt.plot(x_axis, m2s * 100)
         plt.legend(['m1', 'm2'], loc=1)
-        plt.xlabel('start of window')
+        plt.xlabel('start of window in seconds')
         plt.ylabel('Relative Error')
         plt.title('RE with window')
         plt.grid(True)
@@ -196,7 +197,6 @@ def window(currSess, snrs, f, fig, step):
 
 
 snrArr = np.linspace(5.0, 0.1, 50)
-window(sess, snrArr, f_infer, 'window' + test_num + '-', 8192)
 plot(sess, snrArr, f_infer, 'infer' + test_num + '0.0-1.0s')
 plot(sess, snrArr, f_infer, 'infer' + test_num + '0.7-0.9s', shift=[int(LENGTH * 0.7), int(LENGTH * 0.9)])
 plot(sess, snrArr, f_infer, 'infer' + test_num + '0.5-1.0s', shift=[int(LENGTH * 0.5), int(LENGTH * 1.0)])
@@ -204,5 +204,6 @@ plot(sess, snrArr, f_infer, 'infer' + test_num + '0.5-1.0s', shift=[int(LENGTH *
 snrArr = np.array([5.0, 3.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1])
 timeStamps = np.array([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 gradual(sess, snrArr, f_infer, 'infer' + test_num + '-', timeStamps)
+window(sess, snrArr, f_infer, 'window' + test_num + '-', 1024)
 
 plot(sess, snrArr, f_infer, test_num + 'zeroInput', shift=[0, 0])
