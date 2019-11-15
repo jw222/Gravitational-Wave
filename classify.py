@@ -124,9 +124,7 @@ def compute_accuracy(currSess, currSNR, f, shift=None):
         test_data = f[keyStr][j].reshape(1, length)
         test_data = noise.add_shift(test_data)
         if shift is not None:
-            test_data[0][:shift[0]] = 0
-            test_data[0][shift[1]:] = 0
-            # test_data[0] = test_data[0][shift[0]:shift[1]]
+            test_data[0] = test_data[0][shift[0]:shift[1]]
         if real_noise is False:
             test_data = noise.add_noise(input=test_data, SNR=currSNR)
         else:
@@ -140,9 +138,7 @@ def compute_accuracy(currSess, currSNR, f, shift=None):
     for _ in range(len(f[keyStr])):
         test_data = np.zeros(length).reshape(1, length)
         if shift is not None:
-            test_data[0][:shift[0]] = 0
-            test_data[0][shift[1]:] = 0
-            # test_data[0] = test_data[0][shift[0]:shift[1]]
+            test_data[0] = test_data[0][shift[0]:shift[1]]
         if real_noise is False:
             test_data = noise.add_noise(input=test_data, SNR=currSNR)
         else:
@@ -175,3 +171,19 @@ plt.title('Accuracy with SNR')
 plt.grid(True)
 plt.savefig(test_num + 'OverallAccuracy.png')
 
+snrArr = np.array([5.0, 3.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1])
+timeStamps = np.array([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+num_secs = LENGTH // 8192
+for snr in snrArr:
+    acc = []
+    for stop in timeStamps:
+        currShift = [0, int(stop * LENGTH)]
+        accuracy, _, _, _ = compute_accuracy(sess, snr, f_test, currShift)
+        acc.append(accuracy)
+    plt.figure()
+    plt.plot(timeStamps * num_secs, acc)
+    plt.xlabel('timeStamps in seconds')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy with end time')
+    plt.grid(True)
+    plt.savefig(test_num + str(snr) + '-GradualClassify.png')
