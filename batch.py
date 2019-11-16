@@ -126,22 +126,32 @@ def get_classify_batch(f, k, length, real_noise, snr):
 
     # loop to get batch
     for i in range(num_batch):
-        cur_batch = []
+        zero = []
+        signal = []
         cur_label = []
         counter = 0
         for j in range(k):
             if counter < ratioArr[i]:
-                cur_batch.append(np.zeros(length))
+                zero.append(np.zeros(length))
                 cur_label.append([1, 0])
                 counter += 1
                 continue
-            cur_batch.append(f[keyStr][idx[k * i + j]][:length])
+            signal.append(f[keyStr][idx[k * i + j]][:length])
             cur_label.append([0, 1])
-        cur_batch = noise.add_shift(cur_batch)
+
         if real_noise is False:
-            cur_batch = noise.add_noise(input=cur_batch, SNR=snrArr[i])
+            if len(signal) is not 0:
+                signal = noise.add_noise(input=signal, SNR=snrArr[i])
+            if len(zero) is not 0:
+                zero = noise.add_noise(input=zero, SNR=snrArr[i])
         else:
-            cur_batch = noise.add_real_noise(input=cur_batch, SNR=snrArr[i])
+            if len(signal) is not 0:
+                signal = noise.add_real_noise(input=signal, SNR=snrArr[i])
+            if len(zero) is not 0:
+                zero = noise.add_real_noise(input=zero, SNR=snrArr[i])
+        cur_batch = np.array(list(zero) + list(signal))
+        cur_batch = noise.add_shift(cur_batch)
+
         idxCurr = np.arange(k)
         np.random.shuffle(idxCurr)
         cur_batch = [cur_batch[a] for a in idxCurr]
@@ -155,7 +165,7 @@ def get_classify_batch(f, k, length, real_noise, snr):
     return batch, label
 
 
-def get_classifier_val(f, k, length, real_noise, snr):
+def get_classify_val(f, k, length, real_noise, snr):
     """
     :param f: hdf5 file object to get file
     :param k: batch size
@@ -165,7 +175,8 @@ def get_classifier_val(f, k, length, real_noise, snr):
     :return: output batch, output label (Noise, Signal)
     """
 
-    batch = []
+    signal = []
+    zero = []
     label = []
 
     # constant initialization
@@ -177,18 +188,22 @@ def get_classifier_val(f, k, length, real_noise, snr):
     for i in range(k):
         # use half and half during testing
         if counter < k // 2:
-            batch.append(np.zeros(length))
+            zero.append(np.zeros(length))
             label.append([1, 0])
             counter += 1
             continue
-        batch.append(f[keyStr][idx[i]][:length])
+        signal.append(f[keyStr][idx[i]][:length])
         label.append([0, 1])
 
     snrArr = np.random.uniform(low=snr, high=snr, size=1)[0]
     if real_noise is False:
-        batch = noise.add_noise(input=batch, SNR=snrArr)
+        signal = noise.add_noise(input=signal, SNR=snrArr)
+        zero = noise.add_noise(input=zero, SNR=snrArr)
     else:
-        batch = noise.add_real_noise(input=batch, SNR=snrArr)
+        signal = noise.add_real_noise(input=signal, SNR=snrArr)
+        zero = noise.add_real_noise(input=zero, SNR=snrArr)
+    batch = np.array(list(zero) + list(signal))
+
     batch = noise.add_shift(batch)
 
     batch = np.asarray(batch).reshape(k, length, 1)

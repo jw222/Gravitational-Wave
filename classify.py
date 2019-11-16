@@ -93,7 +93,7 @@ for i in range(num_epoch):
         if j % 10 == 0:
             print('loss: ' + str(loss_hist[-1]))
 
-    val_data, val_label = get_classifier_val(f_test, batch_size, length=LENGTH, real_noise=real_noise, snr=snr)
+    val_data, val_label = get_classify_val(f_test, batch_size, length=LENGTH, real_noise=real_noise, snr=snr)
     validation = sess.run(loss, feed_dict={input_data: val_data, input_label: val_label, trainable: False})
     val_loss.append(validation)
     print('iter num: ' + str(i) + ' snr: ' + str(snr) + ' loss: ' + str(loss_hist[-1]) + ' val_loss: ' + str(
