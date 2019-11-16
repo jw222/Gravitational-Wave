@@ -70,8 +70,8 @@ sess = tf.Session(config=config)
 sess.run(init)
 loss_hist = []
 val_loss = []
-saver.restore(sess, '../model/1Classifier.ckpt')
-'''
+#saver.restore(sess, '../model/1Classifier.ckpt')
+
 start = datetime.datetime.now()
 batch_size = 64
 rate = 0.001
@@ -116,7 +116,7 @@ plt.xlabel('epochs')
 plt.ylabel('loss')
 plt.savefig(test_num + 'testLoss.png')
 
-'''
+
 def compute_accuracy(currSess, currSNR, f, length, shift):
     pred = []
     labels = []
