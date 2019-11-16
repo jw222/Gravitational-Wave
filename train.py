@@ -139,6 +139,7 @@ def getError(currSess, snr, f, length, shift=None):
             test_data = noise.add_noise(input=test_data, SNR=snr)
         else:
             test_data = noise.add_real_noise(input=test_data, SNR=snr)
+        test_data = (test_data - np.mean(test_data, axis=1, keepdims=True)) / np.std(test_data, axis=1, keepdims=True)
         test_data = test_data.reshape(1, length, 1)
         test_label = f['m1m2'][j].reshape(1, 2)
         pred.append(

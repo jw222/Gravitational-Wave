@@ -50,6 +50,7 @@ def get_batch(f, k, length, real_noise=False, snr=None, shift=None):
                 cur_batch = noise.add_noise(input=cur_batch, SNR=snrArr[i])
             else:
                 cur_batch = noise.add_real_noise(input=cur_batch, SNR=snrArr[i])
+        cur_batch = (cur_batch - np.mean(cur_batch, axis=1, keepdims=True)) / np.std(cur_batch, axis=1, keepdims=True)
         batch.append(cur_batch)
         label.append(cur_label)
 
@@ -91,6 +92,7 @@ def get_val(f, k, length, real_noise=False, snr=None, shift=None):
         else:
             batch = noise.add_real_noise(input=batch, SNR=snrArr)
     batch = noise.add_shift(batch)
+    batch = (batch - np.mean(batch, axis=1, keepdims=True)) / np.std(batch, axis=1, keepdims=True)
     batch = np.asarray(batch).reshape(k, length, 1)
     label = np.asarray(label)
     return batch, label
