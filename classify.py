@@ -70,8 +70,8 @@ sess = tf.Session(config=config)
 sess.run(init)
 loss_hist = []
 val_loss = []
-#saver.restore(sess, '../model/1Classifier.ckpt')
-
+saver.restore(sess, '../model/1Classifier.ckpt')
+'''
 start = datetime.datetime.now()
 batch_size = 64
 rate = 0.001
@@ -115,7 +115,7 @@ plt.title('loss history--total time: ' + str(end - start))
 plt.xlabel('epochs')
 plt.ylabel('loss')
 plt.savefig(test_num + 'testLoss.png')
-
+'''
 
 def compute_accuracy(currSess, currSNR, f, length, shift):
     pred = []
@@ -149,8 +149,10 @@ def compute_accuracy(currSess, currSNR, f, length, shift):
 
     pred = np.asarray(pred)
     accuracies = np.mean(pred == labels)
-    tp = np.mean([pred[i] == labels[i] and labels[i] == 1 for i in range(len(labels))])
-    fp = np.mean([pred[i] != labels[i] and labels[i] == 0 for i in range(len(labels))])
+    totalPos = np.sum(labels[i] == 1 for i in range(len(labels)))
+    totalNeg = np.sum(labels[i] == 0 for i in range(len(labels)))
+    tp = np.sum([pred[i] == labels[i] and labels[i] == 1 for i in range(len(labels))]) / totalPos
+    fp = np.sum([pred[i] != labels[i] and labels[i] == 0 for i in range(len(labels))]) / totalNeg
     return accuracies, tp, fp
 
 
@@ -160,6 +162,7 @@ sen = []
 fa = []
 for snr in snrArr:
     accuracy, sensitivity, false_alarm = compute_accuracy(sess, snr, f_test, length=LENGTH, shift=[0, LENGTH])
+    print(f"Entire input with snr: {snr}\n accuracy: {accuracy}, sensitivity: {sensitivity}, false alarm rate: {false_alarm}")
     acc.append(accuracy)
     sen.append(sensitivity)
     fa.append(false_alarm)
@@ -175,15 +178,17 @@ plt.grid(True)
 plt.savefig(test_num + 'OverallAccuracy.png')
 
 snrArr = np.array([5.0, 3.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1])
-timeStamps = np.array([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+timeStamps = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 num_secs = LENGTH // 8192
 for snr in snrArr:
     acc = []
     sen = []
     fa = []
+    print(f"Current snr is: {snr}")
     for stop in timeStamps:
         currShift = [0, int(stop * LENGTH)]
         accuracy, sensitivity, false_alarm = compute_accuracy(sess, snr, f_test, length=LENGTH, shift=currShift)
+        print(f"Entire input with stop: {currShift}\n accuracy: {accuracy}, sensitivity: {sensitivity}, false alarm rate: {false_alarm}")
         acc.append(accuracy)
         sen.append(sensitivity)
         fa.append(false_alarm)
