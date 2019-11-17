@@ -70,8 +70,8 @@ sess = tf.Session(config=config)
 sess.run(init)
 loss_hist = []
 val_loss = []
-saver.restore(sess, '../model/1Classifier.ckpt')
-'''
+#saver.restore(sess, '../model/1Classifier.ckpt')
+
 start = datetime.datetime.now()
 batch_size = 64
 rate = 0.001
@@ -116,7 +116,7 @@ plt.xlabel('epochs')
 plt.ylabel('loss')
 plt.savefig(test_num + 'testLoss.png')
 
-'''
+
 def compute_accuracy(currSess, currSNR, f, length, shift):
     pred = []
     labels = []
@@ -149,16 +149,25 @@ def compute_accuracy(currSess, currSNR, f, length, shift):
 
     pred = np.asarray(pred)
     accuracies = np.mean(pred == labels)
-    return accuracies
+    tp = np.mean([pred[i] == labels[i] and labels[i] == 1 for i in range(len(labels))])
+    fp = np.mean([pred[i] != labels[i] and labels[i] == 0 for i in range(len(labels))])
+    return accuracies, tp, fp
 
 
 snrArr = np.linspace(5.0, 0.1, 50)
 acc = []
+sen = []
+fa = []
 for snr in snrArr:
-    accuracy = compute_accuracy(sess, snr, f_test, length=LENGTH, shift=[0, LENGTH])
+    accuracy, sensitivity, false_alarm = compute_accuracy(sess, snr, f_test, length=LENGTH, shift=[0, LENGTH])
     acc.append(accuracy)
+    sen.append(sensitivity)
+    fa.append(false_alarm)
 plt.figure()
 plt.plot(np.flip(snrArr, 0), np.flip(acc, 0))
+plt.plot(np.flip(snrArr, 0), np.flip(sen, 0))
+plt.plot(np.flip(snrArr, 0), np.flip(fa, 0))
+plt.legend(['accuracy', 'sensitivity', 'false_alarm'])
 plt.xlabel('SNR')
 plt.ylabel('Accuracy')
 plt.title('Accuracy with SNR')
@@ -170,12 +179,19 @@ timeStamps = np.array([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 num_secs = LENGTH // 8192
 for snr in snrArr:
     acc = []
+    sen = []
+    fa = []
     for stop in timeStamps:
         currShift = [0, int(stop * LENGTH)]
-        accuracy = compute_accuracy(sess, snr, f_test, length=LENGTH, shift=currShift)
+        accuracy, sensitivity, false_alarm = compute_accuracy(sess, snr, f_test, length=LENGTH, shift=currShift)
         acc.append(accuracy)
+        sen.append(sensitivity)
+        fa.append(false_alarm)
     plt.figure()
     plt.plot(timeStamps * num_secs, acc)
+    plt.plot(timeStamps * num_secs, sen)
+    plt.plot(timeStamps * num_secs, fa)
+    plt.legend(['accuracy', 'sensitivity', 'false_alarm'])
     plt.xlabel('timeStamps in seconds')
     plt.ylabel('Accuracy')
     plt.title('Accuracy with end time')

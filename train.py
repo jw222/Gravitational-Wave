@@ -131,14 +131,14 @@ def getError(currSess, snr, f, length, shift=None):
     for j in range(len(f[keyStr])):
         test_data = f[keyStr][j].reshape(1, length)
         test_data = noise.add_shift(test_data)
-        if shift is not None:
-            test_data[0][:shift[0]] = 0
-            test_data[0][shift[1]:] = 0
-            # test_data[0] = test_data[0][shift[0]:shift[1]]
         if real_noise is False:
             test_data = noise.add_noise(input=test_data, SNR=snr)
         else:
             test_data = noise.add_real_noise(input=test_data, SNR=snr)
+        if shift is not None:
+            test_data[0][:shift[0]] = 0
+            test_data[0][shift[1]:] = 0
+            # test_data[0] = test_data[0][shift[0]:shift[1]]
         test_data = (test_data - np.mean(test_data, axis=1, keepdims=True)) / np.std(test_data, axis=1, keepdims=True)
         test_data = test_data.reshape(1, length, 1)
         test_label = f['m1m2'][j].reshape(1, 2)
@@ -150,7 +150,7 @@ def getError(currSess, snr, f, length, shift=None):
     test_label = np.asarray(f['m1m2'])
     m1 = np.mean(np.divide(abs(pred.T[0] - test_label.T[0]), test_label.T[0]))
     m2 = np.mean(np.divide(abs(pred.T[1] - test_label.T[1]), test_label.T[1]))
-    return m1, m2
+    return m1, m2, pred
 
 
 def triPlot(predict, name, f):
@@ -183,7 +183,7 @@ def plot(currSess, snrs, f, fig, shift=None):
     m1s = []
     m2s = []
     for snr in snrs:
-        m1, m2 = getError(currSess, snr, f, length, shift)
+        m1, m2, pred = getError(currSess, snr, f, length, shift)
         m1s.append(m1)
         m2s.append(m2)
         print('SNR: ' + str(snr) + ' -- m1: ' + "{0:.5%}".format(m1) + ' m2: ' + "{0:.5%}".format(m2))
@@ -212,7 +212,7 @@ def gradual(currSess, snrs, f, fig, times):
         m2s = []
         for stop in times:
             shift = [0, int(stop * length)]
-            m1, m2 = getError(currSess, snr, f, length, shift)
+            m1, m2, _ = getError(currSess, snr, f, length, shift)
             m1s.append(m1)
             m2s.append(m2)
             print('stop: ' + str(shift) + ' -- m1: ' + "{0:.5%}".format(m1) + ' m2: ' + "{0:.5%}".format(m2))
@@ -232,7 +232,6 @@ def gradual(currSess, snrs, f, fig, times):
 
 def window(currSess, snrs, f, fig, step):
     length = len(f[keyStr][0])
-    num_secs = length // 8192
     num_shift = (length - 8192) // step + 1
     for snr in snrs:
         print("\n\nsnr is: ", snr)
@@ -241,20 +240,20 @@ def window(currSess, snrs, f, fig, step):
         for i in range(num_shift):
             shift = [i * step, i * step + 8192]
             print("\nwindow is: ", shift)
-            m1, m2 = getError(currSess, snr, f, length, shift)
+            m1, m2, _ = getError(currSess, snr, f, length, shift)
             m1s.append(m1)
             m2s.append(m2)
             print('window: ' + str(shift) + ' -- m1: ' + "{0:.5%}".format(m1) + ' m2: ' + "{0:.5%}".format(m2))
         m1s = np.asarray(m1s)
         m2s = np.asarray(m2s)
 
-        x_axis = np.arange(0, length - 8192 + step, step)
-        x_axis /= 8192
+        x_axis = np.arange(0, length - 8192 + 1, step, dtype=np.float64)
+        x_axis /= 8192.
         plt.figure()
         plt.plot(x_axis, m1s * 100)
         plt.plot(x_axis, m2s * 100)
         plt.legend(['m1', 'm2'], loc=1)
-        plt.xlabel('start of window')
+        plt.xlabel('start of window in seconds')
         plt.ylabel('Relative Error')
         plt.title('RE with window')
         plt.grid(True)
