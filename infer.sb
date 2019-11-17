@@ -8,4 +8,4 @@
 
 module load powerai
 
-python3 infer.py
+python3 infer.py --model ../model/True_R1noise.ckpt
