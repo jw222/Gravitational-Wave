@@ -75,7 +75,7 @@ def getError(currSess, snr, f, length, shift=None):
             test_data[0][:shift[0]] = 0
             test_data[0][shift[1]:] = 0
             # test_data[0] = test_data[0][shift[0]:shift[1]]
-        test_data = (test_data - np.mean(test_data, axis=1, keepdims=True)) / np.std(test_data, axis=1, keepdims=True)
+
         test_data = test_data.reshape(1, length, 1)
         test_label = f['m1m2'][j].reshape(1, 2)
         pred.append(
