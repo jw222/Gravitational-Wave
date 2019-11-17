@@ -183,9 +183,9 @@ def Classifier(x, train=True):
     raw = tf.layers.flatten(raw)
 
     # get k-highest outputs
-    values, indices = tf.nn.top_k(raw, 256, False)
-    values = tf.layers.dense(values, units=64, activation=tf.nn.relu)
-    values = tf.layers.dense(values, units=16, activation=tf.nn.relu)
+    values, indices = tf.nn.top_k(raw, 1024, False)
+    values = tf.layers.dense(values, units=128, activation=tf.nn.relu)
+    values = tf.layers.dense(values, units=32, activation=tf.nn.relu)
     values = tf.layers.dense(values, units=2)
 
     return values
