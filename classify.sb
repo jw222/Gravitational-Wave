@@ -8,4 +8,4 @@
 
 module load powerai
 
-python3 classify.py --name 1HALF
+python3 classify.py --name 1DOUBLE
