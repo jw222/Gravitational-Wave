@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#SBATCH --job-name="inferClass1"
+#SBATCH --output="inferClass1.%j.%N.out"
+#SBATCH --error="inferClass1.%j.%N.err"
+#SBATCH --partition=gpux1
+#SBATCH --time=72
+
+module load powerai
+
+python3 inferClass.py
