@@ -82,6 +82,7 @@ num_epoch = int(snr_step * len(snrs))
 for i in range(num_epoch):
     snr = snrs[i // snr_step]
     for curr_len in lengths:
+        curr_len = int(curr_len * LENGTH)
         train_data, train_label = get_classify_batch(f_train, batch_size, length=curr_len, real_noise=real_noise, snr=snr)
         for j in range(len(train_data)):
             cur_data = train_data[j]
@@ -187,7 +188,7 @@ test_files = ['data/oneSecondTestWhiten.h5',
               'data/eightSecondTestWhiten.h5']
 num_secs = LENGTH // 8192
 for i in range(len(test_files)):
-    f_test = h5py.File(file_name, "r")
+    f_test = h5py.File(test_files[i], "r")
     for snr in snrArr:
         acc = []
         sen = []
