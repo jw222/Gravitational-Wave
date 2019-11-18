@@ -8,4 +8,4 @@
 
 module load powerai
 
-python3 classify.py --train data/fourSecondTrainWhiten.h5
+python3 classify.py --train data/fourSecondTrainWhiten.h5 --test data/fourSecondTestWhiten.h5
