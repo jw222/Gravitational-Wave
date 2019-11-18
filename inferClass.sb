@@ -8,4 +8,4 @@
 
 module load powerai
 
-python3 inferClass.py
+python3 inferClass.py --model ../model/4Classifier.ckpt --name 4
