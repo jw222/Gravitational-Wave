@@ -186,9 +186,10 @@ test_files = ['data/oneSecondTestWhiten.h5',
               'data/fourSecondTestWhiten.h5',
               'data/sixSecondTestWhiten.h5',
               'data/eightSecondTestWhiten.h5']
-num_secs = LENGTH // 8192
 for i in range(len(test_files)):
     f_test = h5py.File(test_files[i], "r")
+    LENGTH = f_test[keyStr].shape[1]
+    num_secs = LENGTH // 8192
     for snr in snrArr:
         acc = []
         sen = []
