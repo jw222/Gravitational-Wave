@@ -70,8 +70,7 @@ sess = tf.Session(config=config)
 sess.run(init)
 loss_hist = []
 val_loss = []
-saver.restore(sess, '../model/1Classifier.ckpt')
-'''
+
 start = datetime.datetime.now()
 batch_size = 64
 rate = 0.001
@@ -115,7 +114,7 @@ plt.title('loss history--total time: ' + str(end - start))
 plt.xlabel('epochs')
 plt.ylabel('loss')
 plt.savefig(test_num + 'testLoss.png')
-'''
+
 
 def compute_accuracy(currSess, currSNR, f, length, shift):
     pred = []
@@ -179,26 +178,33 @@ plt.savefig(test_num + 'OverallAccuracy.png')
 
 snrArr = np.array([5.0, 3.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1])
 timeStamps = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+test_files = ['data/oneSecondTestWhiten.h5',
+              'data/twoSecondTestWhiten.h5',
+              'data/fourSecondTestWhiten.h5',
+              'data/sixSecondTestWhiten.h5',
+              'data/eightSecondTestWhiten.h5']
 num_secs = LENGTH // 8192
-for snr in snrArr:
-    acc = []
-    sen = []
-    fa = []
-    print(f"Current snr is: {snr}")
-    for stop in timeStamps:
-        currShift = [0, int(stop * LENGTH)]
-        accuracy, sensitivity, false_alarm = compute_accuracy(sess, snr, f_test, length=LENGTH, shift=currShift)
-        print(f"Entire input with stop: {currShift}\n accuracy: {accuracy}, sensitivity: {sensitivity}, false alarm rate: {false_alarm}")
-        acc.append(accuracy)
-        sen.append(sensitivity)
-        fa.append(false_alarm)
-    plt.figure()
-    plt.plot(timeStamps * num_secs, acc)
-    plt.plot(timeStamps * num_secs, sen)
-    plt.plot(timeStamps * num_secs, fa)
-    plt.legend(['accuracy', 'sensitivity', 'false_alarm'])
-    plt.xlabel('timeStamps in seconds')
-    plt.ylabel('Accuracy')
-    plt.title('Accuracy with end time')
-    plt.grid(True)
-    plt.savefig(test_num + str(snr) + '-GradualClassify.png')
+for i in len(test_files):
+    f_test = h5py.File(file_name, "r")
+    for snr in snrArr:
+        acc = []
+        sen = []
+        fa = []
+        print(f"Current snr is: {snr}")
+        for stop in timeStamps:
+            currShift = [0, int(stop * LENGTH)]
+            accuracy, sensitivity, false_alarm = compute_accuracy(sess, snr, f_test, length=LENGTH, shift=currShift)
+            print(f"Entire input with stop: {currShift}\n accuracy: {accuracy}, sensitivity: {sensitivity}, false alarm rate: {false_alarm}")
+            acc.append(accuracy)
+            sen.append(sensitivity)
+            fa.append(false_alarm)
+        plt.figure()
+        plt.plot(timeStamps * num_secs, acc)
+        plt.plot(timeStamps * num_secs, sen)
+        plt.plot(timeStamps * num_secs, fa)
+        plt.legend(['accuracy', 'sensitivity', 'false_alarm'])
+        plt.xlabel('timeStamps in seconds')
+        plt.ylabel('Accuracy')
+        plt.title('Accuracy with end time')
+        plt.grid(True)
+        plt.savefig(test_num + str(snr) + '-GradualClassify.png')

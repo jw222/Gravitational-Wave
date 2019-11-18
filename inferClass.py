@@ -34,7 +34,7 @@ LENGTH = f_test[keyStr].shape[1]
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 # check nan
-if np.isnan(f_train[keyStr]).any():
+if np.isnan(f_test[keyStr]).any():
     print("nan present in training data. Exiting...")
     sys.exit()
 
