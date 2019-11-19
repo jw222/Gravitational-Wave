@@ -11,9 +11,9 @@ os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
 # parsing argument
 parser = argparse.ArgumentParser(description='GW code')
-parser.add_argument('--train', dest='train_file', type=str, default='data/oneSecondTrainWhiten.h5',
+parser.add_argument('--train', dest='train_file', type=str, default='data/fourSecondTrainWhiten.h5',
                     help='the file of the training data')
-parser.add_argument('--test', dest='test_file', type=str, default='data/oneSecondTestWhiten.h5',
+parser.add_argument('--test', dest='test_file', type=str, default='data/fourSecondTestWhiten.h5',
                     help='the file of the testing data')
 parser.add_argument('--name', dest='test_num', type=str, default='1',
                     help='test number')
@@ -207,4 +207,4 @@ for i in range(len(test_files)):
         plt.ylabel('Accuracy')
         plt.title('Accuracy with end time')
         plt.grid(True)
-        plt.savefig(test_num + 'lengthIDX(' + str(i**2) + ')' + str(snr) + '-GradualClassify.png')
+        plt.savefig(test_num + 'lengthIDX(' + str(2**i) + ')' + str(snr) + '-GradualClassify.png')

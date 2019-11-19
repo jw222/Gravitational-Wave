@@ -74,8 +74,8 @@ def compute_accuracy(currSess, currSNR, f, length, shift):
     labels = []
     new_length = shift[1] - shift[0]
     noise = Noiser(new_length)
-    for j in range(len(f[keyStr])):
-        temp_test = f[keyStr][j].reshape(1, length)
+    for j in range(len(f[keyStr])//8):
+        temp_test = f[keyStr][j*8].reshape(1, length)
         temp_test = noise.add_shift(temp_test)
         test_data = np.array(temp_test[0][shift[0]:shift[1]]).reshape(1, new_length)
         if real_noise is False:
@@ -160,4 +160,4 @@ for i in range(len(test_files)):
         plt.ylabel('Accuracy')
         plt.title('Accuracy with end time')
         plt.grid(True)
-        plt.savefig(test_num + 'lengthIDX(' + str(i**2) + ')' + str(snr) + '-GradualClassify.png')
+        plt.savefig(test_num + 'lengthIDX(' + str(2**i) + ')' + str(snr) + '-GradualClassify.png')
