@@ -11,7 +11,7 @@ os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
 # parsing argument
 parser = argparse.ArgumentParser(description='GW code')
-parser.add_argument('--model', dest='model', type=str, default='../model/1Classifier.ckpt',
+parser.add_argument('--model', dest='model', type=str, default='../model/4Classifier.ckpt',
                     help='the file of the model')
 parser.add_argument('--test', dest='test_file', type=str, default='data/oneSecondTestWhiten.h5',
                     help='the file of the testing data')
