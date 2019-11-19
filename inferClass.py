@@ -134,7 +134,6 @@ timeStamps = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 test_files = ['data/oneSecondTestWhiten.h5',
               'data/twoSecondTestWhiten.h5',
               'data/fourSecondTestWhiten.h5',
-              'data/sixSecondTestWhiten.h5',
               'data/eightSecondTestWhiten.h5']
 for i in range(len(test_files)):
     f_test = h5py.File(test_files[i], "r")
@@ -161,4 +160,4 @@ for i in range(len(test_files)):
         plt.ylabel('Accuracy')
         plt.title('Accuracy with end time')
         plt.grid(True)
-        plt.savefig(test_num + 'lengthIDX(' + str(i) + ')' + str(snr) + '-GradualClassify.png')
+        plt.savefig(test_num + 'lengthIDX(' + str(i**2) + ')' + str(snr) + '-GradualClassify.png')

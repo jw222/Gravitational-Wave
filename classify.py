@@ -77,29 +77,26 @@ rate = 0.001
 # len(snr) is 50
 low = [0.6, 0.5, 0.4, 0.4, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.1, 0.1]
 snrs = [5.0, 4.0, 3.0, 2.0, 1.7, 1.5, 1.4, 1.3, 1.2, 1.1, 1.0, 0.9, 0.8, 0.7] + [lows for lows in low for i in range(3)]
-lengths = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
 num_epoch = int(snr_step * len(snrs))
 for i in range(num_epoch):
     snr = snrs[i // snr_step]
-    for curr_len in lengths:
-        curr_len = int(curr_len * LENGTH)
-        train_data, train_label = get_classify_batch(f_train, batch_size, length=curr_len, real_noise=real_noise, snr=snr)
-        for j in range(len(train_data)):
-            cur_data = train_data[j]
-            cur_label = train_label[j]
-            _, loss_val = sess.run([train_op, loss],
-                                   feed_dict={input_data: cur_data,
-                                              input_label: cur_label,
-                                              trainable: True})
-            loss_hist.append(loss_val)
-            if j % 10 == 0:
-                print('loss: ' + str(loss_hist[-1]))
+    train_data, train_label = get_classify_batch(f_train, batch_size, length=LENGTH, real_noise=real_noise, snr=snr)
+    for j in range(len(train_data)):
+        cur_data = train_data[j]
+        cur_label = train_label[j]
+        _, loss_val = sess.run([train_op, loss],
+                               feed_dict={input_data: cur_data,
+                                          input_label: cur_label,
+                                          trainable: True})
+        loss_hist.append(loss_val)
+        if j % 10 == 0:
+            print('loss: ' + str(loss_hist[-1]))
 
-        val_data, val_label = get_classify_val(f_test, batch_size, length=curr_len, real_noise=real_noise, snr=snr)
-        validation = sess.run(loss, feed_dict={input_data: val_data, input_label: val_label, trainable: False})
-        val_loss.append(validation)
-        print('iter num: ' + str(i) + ' snr: ' + str(snr) + 'curr length: ' + str(curr_len) + ' loss: ' + str(loss_hist[-1]) + ' val_loss: ' + str(
-            val_loss[-1]))
+    val_data, val_label = get_classify_val(f_test, batch_size, length=LENGTH, real_noise=real_noise, snr=snr)
+    validation = sess.run(loss, feed_dict={input_data: val_data, input_label: val_label, trainable: False})
+    val_loss.append(validation)
+    print('iter num: ' + str(i) + ' snr: ' + str(snr) + ' loss: ' + str(loss_hist[-1]) + ' val_loss: ' + str(
+        val_loss[-1]))
 
 end = datetime.datetime.now()
 print('time: ' + str(end - start))
@@ -124,8 +121,8 @@ def compute_accuracy(currSess, currSNR, f, length, shift):
     labels = []
     new_length = shift[1] - shift[0]
     noise = Noiser(new_length)
-    for j in range(len(f[keyStr])):
-        temp_test = f[keyStr][j].reshape(1, length)
+    for j in range(len(f[keyStr])//8):
+        temp_test = f[keyStr][j*8].reshape(1, length)
         temp_test = noise.add_shift(temp_test)
         test_data = np.array(temp_test[0][shift[0]:shift[1]]).reshape(1, new_length)
         if real_noise is False:
@@ -184,7 +181,6 @@ timeStamps = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 test_files = ['data/oneSecondTestWhiten.h5',
               'data/twoSecondTestWhiten.h5',
               'data/fourSecondTestWhiten.h5',
-              'data/sixSecondTestWhiten.h5',
               'data/eightSecondTestWhiten.h5']
 for i in range(len(test_files)):
     f_test = h5py.File(test_files[i], "r")
@@ -211,4 +207,4 @@ for i in range(len(test_files)):
         plt.ylabel('Accuracy')
         plt.title('Accuracy with end time')
         plt.grid(True)
-        plt.savefig(test_num + str(snr) + '-GradualClassify.png')
+        plt.savefig(test_num + 'lengthIDX(' + str(i**2) + ')' + str(snr) + '-GradualClassify.png')

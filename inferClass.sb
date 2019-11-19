@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name="inferClassHALF"
-#SBATCH --output="inferClassHALF.%j.%N.out"
-#SBATCH --error="inferClassHALF.%j.%N.err"
+#SBATCH --job-name="inferClass4"
+#SBATCH --output="inferClass4.%j.%N.out"
+#SBATCH --error="inferClass4.%j.%N.err"
 #SBATCH --partition=gpux1
 #SBATCH --time=72
 

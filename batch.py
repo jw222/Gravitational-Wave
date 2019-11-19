@@ -116,8 +116,6 @@ def get_classify_batch(f, k, length, real_noise, snr):
     np.random.shuffle(idx)
     noise = Noiser(length)
     num_batch = NUM_DATA // k
-    ratios = np.random.uniform(size=num_batch)
-    ratioArr = np.array([int(ratio * k) for ratio in ratios])
     high = 3.0
 
     # initialize snr values
@@ -132,7 +130,7 @@ def get_classify_batch(f, k, length, real_noise, snr):
         cur_label = []
         counter = 0
         for j in range(k):
-            if counter < ratioArr[i]:
+            if counter < int(0.875*k):
                 zero.append(np.zeros(length))
                 cur_label.append([1, 0])
                 counter += 1
@@ -188,7 +186,7 @@ def get_classify_val(f, k, length, real_noise, snr):
     counter = 0
     for i in range(k):
         # use half and half during testing
-        if counter < k // 2:
+        if counter < int(0.875*k):
             zero.append(np.zeros(length))
             label.append([1, 0])
             counter += 1
