@@ -196,7 +196,7 @@ def get_classify_val(f, k, length, real_noise, snr):
     f1, f2 = f
 
     # constant initialization
-    idx = np.random.choice(f[keyStr].shape[0], k, replace=False)
+    idx = np.random.choice(f1[keyStr].shape[0], k, replace=False)
     noise = Noiser(length)
 
     # loop to get batch
