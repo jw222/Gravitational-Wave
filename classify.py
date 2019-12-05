@@ -11,9 +11,9 @@ os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
 # parsing argument
 parser = argparse.ArgumentParser(description='GW code')
-parser.add_argument('--train', dest='train_file', type=str, default='data/fourSecondTrainWhiten.h5',
+parser.add_argument('--train', dest='train_file', type=str, default='data/fourSecondTrainWhiten',
                     help='the file of the training data')
-parser.add_argument('--test', dest='test_file', type=str, default='data/fourSecondTestWhiten.h5',
+parser.add_argument('--test', dest='test_file', type=str, default='data/fourSecondTestWhiten',
                     help='the file of the testing data')
 parser.add_argument('--name', dest='test_num', type=str, default='1',
                     help='test number')
@@ -31,10 +31,10 @@ test_num = args.test_num
 snr_step = args.snr_step
 real_noise = args.real_noise
 
-f_train_H = h5py.File(train_path + "H", "r")
-f_train_L = h5py.File(train_path + "L", "r")
-f_test_H = h5py.File(test_path + "H", "r")
-f_test_L = h5py.File(test_path + "L", "r")
+f_train_H = h5py.File(train_path + "H.h5", "r")
+f_train_L = h5py.File(train_path + "L.h5", "r")
+f_test_H = h5py.File(test_path + "H.h5", "r")
+f_test_L = h5py.File(test_path + "L.h5", "r")
 NUM_DATA = f_train_H[keyStr].shape[0]
 LENGTH = f_train_H[keyStr].shape[1]
 
