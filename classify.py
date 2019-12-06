@@ -124,7 +124,7 @@ def compute_accuracy(currSess, currSNR, f, length, shift):
     labels = []
     new_length = shift[1] - shift[0]
     noise = Noiser(new_length)
-    for j in range(len(f[keyStr])//8):
+    for j in range(len(f1[keyStr])//8):
         temp_test1 = f1[keyStr][j*8].reshape(1, length)
         temp_test1 = noise.add_shift(temp_test1)
         test_data1 = np.array(temp_test1[0][shift[0]:shift[1]]).reshape(1, new_length)
@@ -143,7 +143,7 @@ def compute_accuracy(currSess, currSNR, f, length, shift):
         pred.append(np.argmax(curr))
 
     # use same number of noise as signal
-    for _ in range(len(f[keyStr])):
+    for _ in range(len(f1[keyStr])):
         test_data1 = np.zeros(new_length).reshape(1, new_length)
         test_data2 = np.zeros(new_length).reshape(1, new_length)
         if real_noise is False:
@@ -171,7 +171,7 @@ acc = []
 sen = []
 fa = []
 for snr in snrArr:
-    accuracy, sensitivity, false_alarm = compute_accuracy(sess, snr, (f_train_H, f_train_L), length=LENGTH, shift=[0, LENGTH])
+    accuracy, sensitivity, false_alarm = compute_accuracy(sess, snr, (f_test_H, f_test_L), length=LENGTH, shift=[0, LENGTH])
     print(f"Entire input with snr: {snr}\n accuracy: {accuracy}, sensitivity: {sensitivity}, false alarm rate: {false_alarm}")
     acc.append(accuracy)
     sen.append(sensitivity)
@@ -198,7 +198,7 @@ for snr in snrArr:
     print(f"Current snr is: {snr}")
     for stop in timeStamps:
         currShift = [0, int(stop * LENGTH)]
-        accuracy, sensitivity, false_alarm = compute_accuracy(sess, snr, (f_train_H, f_train_L), length=LENGTH, shift=currShift)
+        accuracy, sensitivity, false_alarm = compute_accuracy(sess, snr, (f_test_H, f_test_L), length=LENGTH, shift=currShift)
         print(f"Entire input with stop: {currShift}\n accuracy: {accuracy}, sensitivity: {sensitivity}, false alarm rate: {false_alarm}")
         acc.append(accuracy)
         sen.append(sensitivity)
@@ -212,4 +212,4 @@ for snr in snrArr:
     plt.ylabel('Accuracy')
     plt.title('Accuracy with end time')
     plt.grid(True)
-    plt.savefig(test_num + 'lengthIDX(' + str(2**i) + ')' + str(snr) + '-GradualClassify.png')
+    plt.savefig(test_num + str(snr) + '-GradualClassify.png')
