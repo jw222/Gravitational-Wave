@@ -8,4 +8,4 @@
 
 module load powerai
 
-python3 classify.py --name lessN
+python3 classify.py --name bestC
