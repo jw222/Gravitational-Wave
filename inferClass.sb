@@ -8,4 +8,4 @@
 
 module load powerai
 
-python3 inferClass.py --name 2chan
+python3 inferClass.py --name 1noisy

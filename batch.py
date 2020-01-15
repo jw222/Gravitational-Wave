@@ -55,7 +55,7 @@ def get_batch(f, k, length, real_noise=False, snr=None, shift=None):
         label.append(cur_label)
 
     # reshape
-    batch = np.asarray(batch).reshape((num_batch, k, length, 1))
+    batch = np.asarray(batch).reshape(num_batch, k, length, 1)
     label = np.asarray(label)
     return batch, label
 
@@ -92,7 +92,7 @@ def get_val(f, k, length, real_noise=False, snr=None, shift=None):
         else:
             batch = noise.add_real_noise(input=batch, SNR=snrArr)
     batch = noise.add_shift(batch)
-    batch = np.asarray(batch).reshape((k, length, 1))
+    batch = np.asarray(batch).reshape(k, length, 1)
     label = np.asarray(label)
     return batch, label
 
@@ -110,7 +110,6 @@ def get_classify_batch(f, k, length, real_noise, snr):
     # return array initialization
     batch = []
     label = []
-    f1, f2 = f
 
     # constant initialization
     idx = np.arange(NUM_DATA)
@@ -128,42 +127,31 @@ def get_classify_batch(f, k, length, real_noise, snr):
 
     # loop to get batch
     for i in range(num_batch):
-        zero1 = []
-        zero2 = []
-        signal1 = []
-        signal2 = []
+        zero = []
+        signal = []
         cur_label = []
         counter = 0
         for j in range(k):
             if counter < int(k*3/4):
-                zero1.append(np.zeros(length))
-                zero2.append(np.zeros(length))
+                zero.append(np.zeros(length))
                 cur_label.append([1, 0])
                 counter += 1
                 continue
-            signal1.append(f1[keyStr][idx[k * i + j]][:length])
-            signal2.append(f2[keyStr][idx[k * i + j]][:length])
+            signal.append(f[keyStr][idx[k * i + j]][:length])
             cur_label.append([0, 1])
 
         if real_noise is False:
-            if len(signal1) is not 0:
-                signal1 = noise.add_noise(input=signal1, SNR=snrArr[i])
-                signal2 = noise.add_noise(input=signal2, SNR=snrArr[i])
-            if len(zero1) is not 0:
-                zero1 = noise.add_noise(input=zero1, SNR=snrArr[i])
-                zero2 = noise.add_noise(input=zero2, SNR=snrArr[i])
+            if len(signal) is not 0:
+                signal = noise.add_noise(input=signal, SNR=snrArr[i])
+            if len(zero) is not 0:
+                zero = noise.add_noise(input=zero, SNR=snrArr[i])
         else:
-            if len(signal1) is not 0:
-                signal1 = noise.add_real_noise(input=signal1, SNR=snrArr[i])
-                signal2 = noise.add_real_noise(input=signal2, SNR=snrArr[i])
-            if len(zero1) is not 0:
-                zero1 = noise.add_real_noise(input=zero1, SNR=snrArr[i])
-                zero2 = noise.add_real_noise(input=zero2, SNR=snrArr[i])
-        cur_batch1 = np.array(list(zero1) + list(signal1))
-        cur_batch1 = noise.add_shift(cur_batch1)
-        cur_batch2 = np.array(list(zero2) + list(signal2))
-        cur_batch2 = noise.add_shift(cur_batch2)
-        cur_batch = np.stack([cur_batch1, cur_batch2], axis=-1)
+            if len(signal) is not 0:
+                signal = noise.add_real_noise(input=signal, SNR=snrArr[i])
+            if len(zero) is not 0:
+                zero = noise.add_real_noise(input=zero, SNR=snrArr[i])
+        cur_batch = np.array(list(zero) + list(signal))
+        cur_batch = noise.add_shift(cur_batch)
 
         idxCurr = np.arange(k)
         np.random.shuffle(idxCurr)
@@ -173,7 +161,7 @@ def get_classify_batch(f, k, length, real_noise, snr):
         label.append(cur_label)
 
     # reshape
-    batch = np.asarray(batch).reshape((num_batch, k, length, 2))
+    batch = np.asarray(batch).reshape(num_batch, k, length, 1)
     label = np.asarray(label)
     return batch, label
 
@@ -188,15 +176,12 @@ def get_classify_val(f, k, length, real_noise, snr):
     :return: output batch, output label (Noise, Signal)
     """
 
-    signal1 = []
-    zero1 = []
-    signal2 = []
-    zero2 = []
+    signal = []
+    zero = []
     label = []
-    f1, f2 = f
 
     # constant initialization
-    idx = np.random.choice(f1[keyStr].shape[0], k, replace=False)
+    idx = np.random.choice(f[keyStr].shape[0], k, replace=False)
     noise = Noiser(length)
 
     # loop to get batch
@@ -204,37 +189,24 @@ def get_classify_val(f, k, length, real_noise, snr):
     for i in range(k):
         # use half and half during testing
         if counter < k // 2:
-            zero1.append(np.zeros(length))
-            zero2.append(np.zeros(length))
+            zero.append(np.zeros(length))
             label.append([1, 0])
             counter += 1
             continue
-        signal1.append(f1[keyStr][idx[i]][:length])
-        signal2.append(f2[keyStr][idx[i]][:length])
+        signal.append(f[keyStr][idx[i]][:length])
         label.append([0, 1])
 
     snrArr = np.random.uniform(low=snr, high=snr, size=1)[0]
     if real_noise is False:
-        if len(signal1) is not 0:
-            signal1 = noise.add_noise(input=signal1, SNR=snrArr)
-            signal2 = noise.add_noise(input=signal2, SNR=snrArr)
-        if len(zero1) is not 0:
-            zero1 = noise.add_noise(input=zero1, SNR=snrArr)
-            zero2 = noise.add_noise(input=zero2, SNR=snrArr)
+        signal = noise.add_noise(input=signal, SNR=snrArr)
+        zero = noise.add_noise(input=zero, SNR=snrArr)
     else:
-        if len(signal1) is not 0:
-            signal1 = noise.add_real_noise(input=signal1, SNR=snrArr)
-            signal2 = noise.add_real_noise(input=signal2, SNR=snrArr)
-        if len(zero1) is not 0:
-            zero1 = noise.add_real_noise(input=zero1, SNR=snrArr)
-            zero2 = noise.add_real_noise(input=zero2, SNR=snrArr)
+        signal = noise.add_real_noise(input=signal, SNR=snrArr)
+        zero = noise.add_real_noise(input=zero, SNR=snrArr)
+    batch = np.array(list(zero) + list(signal))
 
-    cur_batch1 = np.array(list(zero1) + list(signal1))
-    cur_batch1 = noise.add_shift(cur_batch1)
-    cur_batch2 = np.array(list(zero2) + list(signal2))
-    cur_batch2 = noise.add_shift(cur_batch2)
-    batch = np.stack([cur_batch1, cur_batch2], axis=-1)
+    batch = noise.add_shift(batch)
 
-    batch = np.asarray(batch).reshape((k, length, 2))
+    batch = np.asarray(batch).reshape(k, length, 1)
     label = np.asarray(label)
     return batch, label
