@@ -76,7 +76,7 @@ for step, ratio in crops:
             curr_strain = strain[start:start + window]
             curr_strain = whiten(curr_strain, psd_H1, dt)
             curr_strain = (curr_strain - np.mean(curr_strain)) / np.std(curr_strain)
-            limit = np.amax(test[int(len(curr_strain) / 2) - 500:int(len(curr_strain) / 2) + 500]) * ratio
+            limit = np.amax(curr_strain[int(len(curr_strain) / 2) - 500:int(len(curr_strain) / 2) + 500]) * ratio
             crop = step
             for i in range(step, int(len(curr_strain) / 2), step):
                 if max(np.amax(curr_strain[i - step:i]), -np.amin(curr_strain[i - step:i])) < limit:
