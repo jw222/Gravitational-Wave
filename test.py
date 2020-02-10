@@ -53,11 +53,13 @@ fs = 8192
 NFFT = 1 * fs
 window = 8192 * 4
 dt = 1. / 8192.
-crops = [250, 500, 750, 1000, 1500, 2000]
+crops = [(50, 1.5), (50, 1.6), (50, 1.7), (50, 1.8), (50, 1.9), (50, 2.0),
+         (100, 1.5), (100, 1.6), (100, 1.7), (100, 1.8), (100, 1.9), (100, 2.0),
+         (200, 1.5), (200, 1.6), (200, 1.7), (200, 1.8), (200, 1.9), (200, 2.0),]
 # 245760 is the time when the event happens: 245760 / 2 = 122880
 event_time = 122880
 signals = ['150914.hdf5', '151012.hdf5', '151226.hdf5']
-for crop in crops:
+for step, ratio in crops:
     for file in signals:
         exist = []
         confidence = []
@@ -74,6 +76,12 @@ for crop in crops:
             curr_strain = strain[start:start + window]
             curr_strain = whiten(curr_strain, psd_H1, dt)
             curr_strain = (curr_strain - np.mean(curr_strain)) / np.std(curr_strain)
+            limit = np.amax(test[int(len(test) / 2) - 500:int(len(test) / 2) + 500]) * ratio
+            crop = step
+            for i in range(step, int(len(test) / 2), step):
+                if max(np.amax(test[i - step:i]), -np.amin(test[i - step:i])) < limit:
+                    break
+                crop = i
             curr_strain = curr_strain[crop:-crop]
             curr_strain = np.array(curr_strain).reshape(1, window - 2 * crop, 1)
             result = sess.run(predictions, feed_dict={input_data: curr_strain, trainable: False})[0]
@@ -90,7 +98,7 @@ for crop in crops:
         plt.xlabel('center time')
         plt.ylabel('signal existence')
         plt.title('signal existence with time')
-        plt.savefig(file[:-5] + '-' + str(crop) + '-existence.png')
+        plt.savefig(file[:-5] + '-' + str(step) + '-' + str(ratio) + '-existence.png')
 
         # plot confidence graph
         plt.figure()
@@ -99,4 +107,4 @@ for crop in crops:
         plt.ylabel('confidence')
         plt.title('confidence with time')
         plt.grid(True)
-        plt.savefig(file[:-5] + '-' + str(crop) + '-confidence.png')
+        plt.savefig(file[:-5] + '-' + str(step) + '-' + str(ratio) + '-confidence.png')
