@@ -6,6 +6,6 @@
 #SBATCH --partition=gpux1
 #SBATCH --time=72
 
-module load wmlce/1.6.1-py3.6
+module load wmlce/1.6.2-py3.7
 
 python3 inferClass.py --name test
