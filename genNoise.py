@@ -40,5 +40,5 @@ strain_test = whiten_wrapper(strain_test, 1./8192.)
 strain_test = strain_test[10000:-10000]
 
 f = h5py.File(save_path, 'w')
-f['Dataset1'] = res_array
+f['Dataset1'] = strain_test
 f.close()
