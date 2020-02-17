@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#SBATCH --job-name="bestC"
-#SBATCH --output="classD.%j.%N.out"
-#SBATCH --error="classD.%j.%N.err"
+#SBATCH --job-name="new1"
+#SBATCH --output="new1.%j.%N.out"
+#SBATCH --error="new1.%j.%N.err"
 #SBATCH --partition=gpux1
 #SBATCH --time=72
 
 module load wmlce/1.6.2-py3.7
 
-python3 classify.py --name bestC
+python3 classify.py --train data/oneSecondTrainWhitenH.h5 --test data/oneSecondTestWhitenH.h5 --name new1

@@ -121,7 +121,7 @@ def compute_accuracy(currSess, currSNR, f, length, shift):
     labels = []
     new_length = shift[1] - shift[0]
     noise = Noiser(new_length)
-    for j in range(len(f[keyStr])//8):
+    for j in range(len(f[keyStr])//2):
         temp_test = f[keyStr][j*8].reshape(1, length)
         temp_test = noise.add_shift(temp_test)
         test_data = np.array(temp_test[0][shift[0]:shift[1]]).reshape(1, new_length)
@@ -135,7 +135,7 @@ def compute_accuracy(currSess, currSNR, f, length, shift):
         pred.append(np.argmax(curr))
 
     # use same number of noise as signal
-    for _ in range(len(f[keyStr])):
+    for _ in range(len(f[keyStr])//2):
         test_data = np.zeros(new_length).reshape(1, new_length)
         if real_noise is False:
             test_data = noise.add_noise(input=test_data, SNR=currSNR)
@@ -179,7 +179,7 @@ plt.savefig(test_num + 'OverallAccuracy.png')
 snrArr = np.array([5.0, 3.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1])
 timeStamps = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 test_files = ['data/oneSecondTestWhiten.h5',
-              'data/twoSecondTestWhiten.h5',
+              #'data/twoSecondTestWhiten.h5',
               'data/fourSecondTestWhitenH.h5']
 for i in range(len(test_files)):
     f_test = h5py.File(test_files[i], "r")
