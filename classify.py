@@ -122,7 +122,7 @@ def compute_accuracy(currSess, currSNR, f, length, shift):
     new_length = shift[1] - shift[0]
     noise = Noiser(new_length)
     for j in range(len(f[keyStr])//2):
-        temp_test = f[keyStr][j*8].reshape(1, length)
+        temp_test = f[keyStr][j*2].reshape(1, length)
         temp_test = noise.add_shift(temp_test)
         test_data = np.array(temp_test[0][shift[0]:shift[1]]).reshape(1, new_length)
         if real_noise is False:

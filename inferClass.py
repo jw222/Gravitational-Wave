@@ -13,7 +13,7 @@ os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 parser = argparse.ArgumentParser(description='GW code')
 parser.add_argument('--model', dest='model', type=str, default='../model/4Classifier.ckpt',
                     help='the file of the model')
-parser.add_argument('--test', dest='test_file', type=str, default='data/oneSecondTestWhiten.h5',
+parser.add_argument('--test', dest='test_file', type=str, default='data/oneSecondTestWhitenH.h5',
                     help='the file of the testing data')
 parser.add_argument('--name', dest='test_num', type=str, default='1',
                     help='test number')
@@ -74,8 +74,8 @@ def compute_accuracy(currSess, currSNR, f, length, shift):
     labels = []
     new_length = shift[1] - shift[0]
     noise = Noiser(new_length)
-    for j in range(len(f[keyStr])//8):
-        temp_test = f[keyStr][j*8].reshape(1, length)
+    for j in range(len(f[keyStr])//2):
+        temp_test = f[keyStr][j*2].reshape(1, length)
         temp_test = noise.add_shift(temp_test)
         test_data = np.array(temp_test[0][shift[0]:shift[1]]).reshape(1, new_length)
         if real_noise is False:
@@ -131,7 +131,7 @@ plt.savefig(test_num + 'OverallAccuracy.png')
 
 snrArr = np.array([5.0, 3.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1])
 timeStamps = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
-test_files = ['data/oneSecondTestWhiten.h5',
+test_files = ['data/oneSecondTestWhitenH.h5',
               'data/twoSecondTestWhiten.h5',
               'data/fourSecondTestWhitenH.h5']
 for i in range(len(test_files)):

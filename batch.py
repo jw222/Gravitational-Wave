@@ -132,7 +132,7 @@ def get_classify_batch(f, k, length, real_noise, snr):
         cur_label = []
         counter = 0
         for j in range(k):
-            if counter < k//2:
+            if counter < int(k*3/4):
                 zero.append(np.zeros(length))
                 cur_label.append([1, 0])
                 counter += 1

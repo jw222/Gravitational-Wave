@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#SBATCH --job-name="inferT"
-#SBATCH --output="inferClass4.%j.%N.out"
-#SBATCH --error="inferClass4.%j.%N.err"
+#SBATCH --job-name="inferNew"
+#SBATCH --output="inferNew.%j.%N.out"
+#SBATCH --error="inferNew.%j.%N.err"
 #SBATCH --partition=gpux1
 #SBATCH --time=72
 
 module load wmlce/1.6.2-py3.7
 
-python3 inferClass.py --name test
+python3 inferClass.py --name new1 --model ../model/new1Classifier.ckpt
