@@ -4,9 +4,13 @@ import datetime
 from scipy.interpolate import interp1d
 import matplotlib.mlab as mlab
 import readligo as rl
+import argparse
 from net import *
 from batch import *
 
+parser = argparse.ArgumentParser(description='GW code')
+parser.add_argument('--model', dest='model_path', type=str, default='../model/lessNClassifier.ckpt',
+                    help='model for testing')
 
 def whiten(strainW, interp_psd, dt):
     Nt = len(strainW)
@@ -21,7 +25,8 @@ def whiten(strainW, interp_psd, dt):
 
 
 # set model parameters
-model_path = '../model/lessNClassifier.ckpt'
+args = parser.parse_args()
+model_path = args.model_path
 input_data = tf.placeholder(tf.float32, [None, None, 1])
 input_label = tf.placeholder(tf.int32, [None, 2])
 trainable = tf.placeholder(tf.bool)
