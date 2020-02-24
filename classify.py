@@ -76,7 +76,7 @@ batch_size = 64
 rate = 0.001
 # len(snr) is 50
 low = [0.6, 0.5, 0.4, 0.4, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.1, 0.1]
-snrs = [5.0, 4.0, 3.0, 2.0, 1.7, 1.5, 1.4, 1.3, 1.2, 1.1, 1.0, 0.9, 0.8, 0.7] + [lows for lows in low for i in range(3)]
+snrs = [3.0, 2.0, 1.5, 1.2, 1.0, 0.9, 0.8, 0.7] + [lows for lows in low for i in range(3)]
 num_epoch = int(snr_step * len(snrs))
 for i in range(num_epoch):
     snr = snrs[i // snr_step]

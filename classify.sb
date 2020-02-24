@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#SBATCH --job-name="new1"
-#SBATCH --output="new1.%j.%N.out"
-#SBATCH --error="new1.%j.%N.err"
+#SBATCH --job-name="reduced"
+#SBATCH --output="reduced.%j.%N.out"
+#SBATCH --error="reduced.%j.%N.err"
 #SBATCH --partition=gpux1
 #SBATCH --time=72
 
 module load wmlce/1.6.2-py3.7
 
-python3 classify.py --name new4
+python3 classify.py --name reduced
