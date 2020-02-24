@@ -80,7 +80,6 @@ for step, ratio in crops:
         for start in range(0, len(strain) - window, 1024):
             curr_strain = strain[start:start + window]
             curr_strain = whiten(curr_strain, psd_H1, dt)
-            curr_strain = (curr_strain - np.mean(curr_strain)) / np.std(curr_strain)
             limit = np.amax(curr_strain[int(len(curr_strain) / 2) - 500:int(len(curr_strain) / 2) + 500]) * ratio
             crop = step
             for i in range(step, int(len(curr_strain) / 2), step):
@@ -88,6 +87,7 @@ for step, ratio in crops:
                     break
                 crop = i
             curr_strain = curr_strain[crop:-crop]
+            curr_strain = (curr_strain - np.mean(curr_strain)) / np.std(curr_strain)
             curr_strain = np.array(curr_strain).reshape(1, window - 2 * crop, 1)
             result = sess.run(predictions, feed_dict={input_data: curr_strain, trainable: False})[0]
             pred = True if np.argmax(result) == 1 else False
