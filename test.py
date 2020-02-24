@@ -9,7 +9,7 @@ from net import *
 from batch import *
 
 parser = argparse.ArgumentParser(description='GW code')
-parser.add_argument('--model', dest='model_path', type=str, default='../model/lessNClassifier.ckpt',
+parser.add_argument('--model', dest='model_path', type=str, default='../model/new1Classifier.ckpt',
                     help='model for testing')
 
 def whiten(strainW, interp_psd, dt):
@@ -56,7 +56,7 @@ saver.restore(sess, model_path)
 # sliding window data
 fs = 8192
 NFFT = 1 * fs
-window = 8192 * 4
+window = 8192
 dt = 1. / 8192.
 crops = [(50, 1.5), (50, 1.6), (50, 1.7), (50, 1.8), (50, 1.9), (50, 2.0),
          (100, 1.5), (100, 1.6), (100, 1.7), (100, 1.8), (100, 1.9), (100, 2.0),
