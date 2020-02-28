@@ -52,11 +52,11 @@ trainable = tf.placeholder(tf.bool)
 
 # loss function operations
 predictions = Classifier(input_data, trainable)
-loss = tf.losses.sigmoid_cross_entropy(input_label, predictions)
+loss = tf.losses.softmax_cross_entropy(input_label, predictions)
 
 # train operation
 global_step = tf.Variable(0, trainable=False)
-optimizer = tf.train.RMSPropOptimizer(learning_rate=0.001)
+optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
 train_op = optimizer.minimize(
     loss=loss,
     global_step=global_step)
@@ -179,7 +179,6 @@ plt.savefig(test_num + 'OverallAccuracy.png')
 snrArr = np.array([5.0, 3.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1])
 timeStamps = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 test_files = ['data/oneSecondTestWhitenH.h5',
-              #'data/twoSecondTestWhiten.h5',
               'data/fourSecondTestWhitenH.h5']
 for i in range(len(test_files)):
     f_test = h5py.File(test_files[i], "r")
@@ -206,4 +205,4 @@ for i in range(len(test_files)):
         plt.ylabel('Accuracy')
         plt.title('Accuracy with end time')
         plt.grid(True)
-        plt.savefig(test_num + 'lengthIDX(' + str(2**i) + ')' + str(snr) + '-GradualClassify.png')
+        plt.savefig(test_num + 'lengthIDX(' + str(4*(i-1)) + ')' + str(snr) + '-GradualClassify.png')

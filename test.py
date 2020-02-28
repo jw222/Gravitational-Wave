@@ -5,6 +5,7 @@ from scipy.interpolate import interp1d
 import matplotlib.mlab as mlab
 import readligo as rl
 import argparse
+import pickle
 from net import *
 from batch import *
 
@@ -56,36 +57,40 @@ saver.restore(sess, model_path)
 # sliding window data
 fs = 8192
 NFFT = 1 * fs
-window = 8192
+window = 8192*4
+crop = 8192
 dt = 1. / 8192.
-crops = [(50, 1.5), (50, 1.6), (50, 1.7), (50, 1.8), (50, 1.9), (50, 2.0),
-         (100, 1.5), (100, 1.6), (100, 1.7), (100, 1.8), (100, 1.9), (100, 2.0),
-         (200, 1.5), (200, 1.6), (200, 1.7), (200, 1.8), (200, 1.9), (200, 2.0),]
-# 245760 is the time when the event happens: 245760 / 2 = 122880
+crops = [(8192*2, 4096), (8192*4, 8192+4096), (8192*4, 8192), (8192*8, 8192*2), (8192*8, 8192*3)]
+# 245760 for 32 seconds
 event_time = 122880
-signals = ['150914.hdf5', '151012.hdf5', '151226.hdf5']
-for step, ratio in crops:
+signals = ['150914.hdf5', '151012.hdf5', '170104.hdf5', '170608.hdf5']
+for window, crop in crops:
     for file in signals:
         exist = []
         confidence = []
         x_axis = []
-        file_path = 'data/' + file
+        file_path = '../' + file
         strain, time, chan_dict = rl.loaddata(file_path, 'H1')
         # calculate psd
         strain = [strain[i] for i in range(0, len(strain), 2)]
-        Pxx_H1, freqs = mlab.psd(strain, Fs=fs, NFFT=NFFT)
-        psd_H1 = interp1d(freqs, Pxx_H1)
+        with open("freqs-"+file[:6], 'rb') as fh:
+            freqs = pickle.load(fh)
+        with open("pxxh-"+file[:6], 'rb') as fh:
+            Pxx_H1 = pickle.load(fh)
+            psd_H1 = interp1d(freqs, Pxx_H1)
 
         # sliding window method
         for start in range(0, len(strain) - window, 1024):
             curr_strain = strain[start:start + window]
             curr_strain = whiten(curr_strain, psd_H1, dt)
+            '''
             limit = np.amax(curr_strain[int(len(curr_strain) / 2) - 500:int(len(curr_strain) / 2) + 500]) * ratio
             crop = step
             for i in range(step, int(len(curr_strain) / 2), step):
                 if max(np.amax(curr_strain[i - step:i]), -np.amin(curr_strain[i - step:i])) < limit:
                     break
                 crop = i
+            '''
             curr_strain = curr_strain[crop:-crop]
             curr_strain = (curr_strain - np.mean(curr_strain)) / np.std(curr_strain)
             curr_strain = np.array(curr_strain).reshape(1, window - 2 * crop, 1)
@@ -94,7 +99,7 @@ for step, ratio in crops:
             exist.append(pred)
             confidence.append(abs(result[1] - result[0]))
             x_axis.append((start + window / 2 - event_time) / fs)
-            print(f"start time: {(start - event_time) / fs} ----- end time: {(start + window - event_time) / fs}")
+            print(f"start time: {(start - event_time + crop) / fs} ----- end time: {(start + window - event_time - crop) / fs}")
             print(f"existence of signal: {pred}, result array: {result}")
 
         # plot result graph
@@ -103,7 +108,7 @@ for step, ratio in crops:
         plt.xlabel('center time')
         plt.ylabel('signal existence')
         plt.title('signal existence with time')
-        plt.savefig(file[:-5] + '-' + str(step) + '-' + str(ratio) + '-existence.png')
+        plt.savefig(file[:6] + '-' + str(window/8192) + '-' + str(crop/8192) + '-existence.png')
 
         # plot confidence graph
         plt.figure()
@@ -112,4 +117,4 @@ for step, ratio in crops:
         plt.ylabel('confidence')
         plt.title('confidence with time')
         plt.grid(True)
-        plt.savefig(file[:-5] + '-' + str(step) + '-' + str(ratio) + '-confidence.png')
+        plt.savefig(file[:6] + '-' + str(window/8192) + '-' + str(crop/8192) + '-confidence.png')
