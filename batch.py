@@ -130,12 +130,11 @@ def get_classify_batch(f, k, length, real_noise, snr):
         zero = []
         signal = []
         cur_label = []
-        counter = 0
         for j in range(k):
-            if counter < k*3//4:
+            rand = np.random.uniform(low=0.0, high=1.0)
+            if rand < 0.6:
                 zero.append(np.zeros(length))
                 cur_label.append([1, 0])
-                counter += 1
                 continue
             signal.append(f[keyStr][idx[k * i + j]][:length])
             cur_label.append([0, 1])
