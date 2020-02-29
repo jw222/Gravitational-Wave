@@ -132,7 +132,7 @@ def get_classify_batch(f, k, length, real_noise, snr):
         cur_label = []
         for j in range(k):
             rand = np.random.uniform(low=0.0, high=1.0)
-            if rand < 0.6:
+            if rand < 0.3:
                 zero.append(np.zeros(length))
                 cur_label.append([1, 0])
                 continue
