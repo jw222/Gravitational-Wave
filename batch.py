@@ -123,18 +123,19 @@ def get_classify_batch(f, k, length, real_noise, snr):
     # initialize snr values
     if snr > high:
         high = snr
-    snrArr = np.random.uniform(low=snr, high=high, size=num_batch)
+    snrArr = np.random.uniform(low=snr, high=high, size=num_batch)  
 
+    counter = 0
     # loop to get batch
     for i in range(num_batch):
         zero = []
         signal = []
         cur_label = []
         for j in range(k):
-            rand = np.random.uniform(low=0.0, high=1.0)
-            if rand < 0.3:
+            if counter < NUM_DATA * 3 // 4:
                 zero.append(np.zeros(length))
                 cur_label.append([1, 0])
+                counter += 1
                 continue
             signal.append(f[keyStr][idx[k * i + j]][:length])
             cur_label.append([0, 1])
