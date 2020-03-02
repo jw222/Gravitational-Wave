@@ -56,7 +56,7 @@ loss = tf.losses.softmax_cross_entropy(input_label, predictions)
 
 # train operation
 global_step = tf.Variable(0, trainable=False)
-optimizer = tf.train.RMSOptimizer(learning_rate=0.001)
+optimizer = tf.train.RMSPropOptimizer(learning_rate=0.001)
 train_op = optimizer.minimize(
     loss=loss,
     global_step=global_step)
