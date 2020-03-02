@@ -72,7 +72,7 @@ loss_hist = []
 val_loss = []
 
 start = datetime.datetime.now()
-batch_size = 64
+batch_size = 32
 rate = 0.001
 # len(snr) is 50
 low = [0.6, 0.5, 0.4, 0.4, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.1, 0.1]
