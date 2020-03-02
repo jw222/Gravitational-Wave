@@ -56,7 +56,7 @@ loss = tf.losses.softmax_cross_entropy(input_label, predictions)
 
 # train operation
 global_step = tf.Variable(0, trainable=False)
-optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
+optimizer = tf.train.RMSOptimizer(learning_rate=0.001)
 train_op = optimizer.minimize(
     loss=loss,
     global_step=global_step)
@@ -76,7 +76,7 @@ batch_size = 64
 rate = 0.001
 # len(snr) is 50
 low = [0.6, 0.5, 0.4, 0.4, 0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.1, 0.1]
-snrs = [3.0, 2.0, 1.5, 1.2, 1.0, 0.9, 0.8, 0.7] + [lows for lows in low for i in range(3)]
+snrs = [5.0, 4.0, 3.0, 2.0, 1.5, 1.2, 1.0, 0.9, 0.8, 0.7] + [lows for lows in low for i in range(3)]
 num_epoch = int(snr_step * len(snrs))
 for i in range(num_epoch):
     snr = snrs[i // snr_step]
