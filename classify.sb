@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#SBATCH --job-name="B64L1Ra48"
-#SBATCH --output="B64L1Ra48.%j.%N.out"
-#SBATCH --error="B64L1Ra48.%j.%N.err"
+#SBATCH --job-name="B64L1Ra58"
+#SBATCH --output="B64L1Ra58.%j.%N.out"
+#SBATCH --error="B64L1Ra58.%j.%N.err"
 #SBATCH --partition=gpux1
 #SBATCH --time=24
 
 module load wmlce/1.6.2-py3.7
 
-python3 classify.py --train 'data/oneSecondTrainWhitenH.h5' --test 'data/oneSecondTestWhitenH.h5' --name B64L1Ra48
+python3 classify.py --train 'data/oneSecondTrainWhitenH.h5' --test 'data/oneSecondTestWhitenH.h5' --name B64L1Ra58
