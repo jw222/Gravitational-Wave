@@ -8,4 +8,4 @@
 
 module load wmlce/1.6.2-py3.7
 
-python3 classify.py --train 'data/oneSecondTrainWhitenH.h5' --test 'data/oneSecondTestWhitenH.h5' --name B2L1
+python3 classify.py --train 'data/oneSecondTrainWhitenH.h5' --test 'data/oneSecondTestWhitenH.h5' --name B32L1
