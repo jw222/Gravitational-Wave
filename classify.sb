@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name="B2L1"
-#SBATCH --output="B2L1.%j.%N.out"
-#SBATCH --error="B2L1.%j.%N.err"
+#SBATCH --job-name="B32L1"
+#SBATCH --output="B32L1.%j.%N.out"
+#SBATCH --error="B32L1.%j.%N.err"
 #SBATCH --partition=gpux1
 #SBATCH --time=24
 
