@@ -52,7 +52,7 @@ trainable = tf.placeholder(tf.bool)
 
 # loss function operations
 predictions = Classifier(input_data, trainable)
-loss = tf.losses.softmax_cross_entropy(input_label, predictions)
+loss = tf.losses.sigmoid_cross_entropy(input_label, predictions)
 
 # train operation
 global_step = tf.Variable(0, trainable=False)
@@ -175,7 +175,7 @@ plt.ylabel('Accuracy')
 plt.title('Accuracy with SNR')
 plt.grid(True)
 plt.savefig(test_num + 'OverallAccuracy.png')
-
+'''
 snrArr = np.array([5.0, 3.0, 2.0, 1.5, 1.0, 0.7, 0.5, 0.3, 0.2, 0.1])
 timeStamps = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 test_files = ['data/oneSecondTestWhitenH.h5',
@@ -206,3 +206,4 @@ for i in range(len(test_files)):
         plt.title('Accuracy with end time')
         plt.grid(True)
         plt.savefig(test_num + 'lengthIDX(' + str(4*(i-1)) + ')' + str(snr) + '-GradualClassify.png')
+'''
