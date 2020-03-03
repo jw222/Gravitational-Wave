@@ -3,42 +3,69 @@ from scipy.interpolate import interp1d
 import matplotlib.mlab as mlab
 import readligo as rl
 import h5py
+import argparse
+import sys
+import pickle
 
-save_path = 'data/noiseWhitened.hdf5'
 
-def whiten_wrapper(wave, dt):
-    fn_H1 = 'data/150914-4096.hdf5'
-    strain_H1, time_H1, chan_dict_H1 = rl.loaddata(fn_H1, 'H1')
-    conditioned = [strain_H1[i] for i in range(0,len(strain_H1),2)]
-    
-    fs = 8192
-    NFFT = 1*fs
-    Pxx_H1, freqs = mlab.psd(conditioned, Fs = fs, NFFT = NFFT)
-    psd_H1 = interp1d(freqs, Pxx_H1)
+# function to whiten data
+def whiten(strainW, interp_psd, dt):
+    Nt = len(strainW)
+    freqsW = np.fft.rfftfreq(Nt, dt)
 
-    # function to whiten data
-    def whiten(strainW, interp_psd, dt):
-        Nt = len(strainW)
-        freqsW = np.fft.rfftfreq(Nt, dt)
+    # whitening: transform to freq domain, divide by asd, then transform back, 
+    # taking care to get normalization right.
+    hf = np.fft.rfft(strainW)
+    white_hf = hf / (np.sqrt(interp_psd(freqsW) /dt/2.))
+    white_ht = np.fft.irfft(white_hf, n=Nt)
+    return white_ht
 
-        # whitening: transform to freq domain, divide by asd, then transform back, 
-        # taking care to get normalization right.
-        hf = np.fft.rfft(strainW)
-        white_hf = hf / (np.sqrt(interp_psd(freqsW) /dt/2.))
-        white_ht = np.fft.irfft(white_hf, n=Nt)
-        return white_ht
 
-    # now whiten the data from H1 and L1, and also the NR template:
-    wave_whiten = whiten(wave, psd_H1, dt)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='generate psd and noise')
+    parser.add_argument('--file', dest='file_path', type=str, default='data/150914-4096.hdf5',
+                        help='file path of raw data')
+    parser.add_argument('--freq', dest='freq', type=int, default=8,
+                        help='frequency needed')
+    parser.add_argument('--type', dest='detector', type=str, default='H1',
+                        help='data from which detector. Either H1 or L1')
+    parser.add_argument('--save', dest='save_prefix', type=str, default='150914',
+                        help='file save path')
+    args = parser.parse_args()
+
+    fp = args.file_path
+    freq = args.freq
+    ifo = args.detector
+    prefix = args.save_prefix
+
+    # argument check
+    if 16 % freq != 0:
+        print('Frequency not valid. data is downsampled from 16kHz')
+        sys.exit(1)
+    if ifo != 'H1' and ifo != 'L1':
+        print('Type has to be either H1 or L1')
+        sys.exit(1)
+
+    strain, time, chan_dict = rl.loaddata(fp, ifo)
+    if freq != 16:
+        # downsample
+        strain = [strain[i] for i in range(0, len(strain), int(16/freq))]
+
+    # whitening signal
+    pxx, freqs = mlab.psd(strain, Fs=freq, NFFT=freq)
+    psd = interp1d(freqs, pxx)
+    wave_whiten = whiten(strain, psd, 1./float(freq*1024))
     wave_whiten = (wave_whiten - np.mean(wave_whiten)) / np.std(wave_whiten)
+    # crop out high edges
+    strain = strain[10000:-10000]
 
-    return wave_whiten
+    # save noise to file
+    f = h5py.File('noise'+prefix+'-'+str(freq)+ifo+'.hdf5', 'w')
+    f['Dataset1'] = strain
+    f.close()
 
-strain_test, time_test, chan_dict_test = rl.loaddata("data/150914-4096.hdf5", 'H1')
-strain_test = [strain_test[i] for i in range(0,len(strain_test),2)]
-strain_test = whiten_wrapper(strain_test, 1./8192.)
-strain_test = strain_test[10000:-10000]
-
-f = h5py.File(save_path, 'w')
-f['Dataset1'] = strain_test
-f.close()
+    # save frequency and psd to file
+    with open('freqs'+ifo+'-'+prefix+'-'+str(freq), 'w') as fn:
+        pickle.dump(freqs, fn)
+    with open('pxx'+ifo+'-'+prefix+'-'+str(freq), 'w') as fn:
+        pickle.dump(pxx, fn)
