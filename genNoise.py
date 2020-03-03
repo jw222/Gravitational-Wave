@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     # whitening signal
     pxx, freqs = mlab.psd(strain, Fs=freq, NFFT=freq)
-    psd = interp1d(freqs, pxx)
+    psd = interp1d(freqs, pxx, fill_value='extrapolate')
     wave_whiten = whiten(strain, psd, 1./float(freq*1024))
     wave_whiten = (wave_whiten - np.mean(wave_whiten)) / np.std(wave_whiten)
     # crop out high edges
