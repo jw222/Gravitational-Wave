@@ -52,8 +52,9 @@ if __name__ == '__main__':
         strain = [strain[i] for i in range(0, len(strain), int(16/freq))]
 
     # whitening signal
-    pxx, freqs = mlab.psd(strain, Fs=freq, NFFT=freq)
-    psd = interp1d(freqs, pxx, fill_value='extrapolate')
+    fs = 1024*freq
+    pxx, freqs = mlab.psd(strain, Fs=fs, NFFT=fs)
+    psd = interp1d(freqs, pxx)
     wave_whiten = whiten(strain, psd, 1./float(freq*1024))
     wave_whiten = (wave_whiten - np.mean(wave_whiten)) / np.std(wave_whiten)
     # crop out high edges
@@ -65,7 +66,7 @@ if __name__ == '__main__':
     f.close()
 
     # save frequency and psd to file
-    with open('freqs'+ifo+'-'+prefix+'-'+str(freq), 'w') as fn:
+    with open('freqs'+ifo+'-'+prefix+'-'+str(freq), 'wb') as fn:
         pickle.dump(freqs, fn)
-    with open('pxx'+ifo+'-'+prefix+'-'+str(freq), 'w') as fn:
+    with open('pxx'+ifo+'-'+prefix+'-'+str(freq), 'wb') as fn:
         pickle.dump(pxx, fn)
