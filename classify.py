@@ -127,9 +127,8 @@ if __name__ == '__main__':
     tf.reset_default_graph()
     # testing
     infer = Inference(model_path, args.test_file, args.noise_file, args.freq, args.noiseType, output_file)
-    if args.testOverall == True:
-        print(args.testOverall)
-        #infer.overall_accuracy()
+    if args.testOverall:
+        infer.overall_accuracy()
     if args.testGradual:
         infer.gradual_accuracy()
     if args.testReal:
