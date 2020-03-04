@@ -1,11 +1,16 @@
 #!/bin/bash
 
-#SBATCH --job-name="inferNew"
-#SBATCH --output="inferNew.%j.%N.out"
-#SBATCH --error="inferNew.%j.%N.err"
+#SBATCH --job-name="0914H16S1"
+#SBATCH --output="0914H16S1.%j.%N.out"
+#SBATCH --error="0914H16S1.%j.%N.err"
 #SBATCH --partition=gpux1
 #SBATCH --time=72
 
 module load wmlce/1.6.2-py3.7
 
-python3 inferClass.py --name new1 --model ../model/new1Classifier.ckpt
+python3 inference.py \
+	--model '../model/B64L1Ra58Classifier.ckpt' \
+	--test 'data/150914H16S1Test.h5' \
+	--noise 'data/noise150914-16H1.hdf5' \
+	--name '0914H16S1' \
+	--freq 16

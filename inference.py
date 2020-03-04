@@ -1,8 +1,15 @@
 import matplotlib.pyplot as plt
+import tensorflow as tf
+import numpy as np
+import readligo as rl
+from scipy.interpolate import interp1d
+import matplotlib.mlab as mlab
 import datetime
 import sys
 import os
 import argparse
+import h5py
+import pickle
 from net import Classifier
 from noiser import Noiser
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
@@ -27,7 +34,7 @@ def parseTestInput():
                         help='whether cast output to a file')
     parser.add_argument('--noiseType', dest='noiseType', type=bool, default=True,
                         help='whether add real noise or generated noise')
-    parser.add_argument('--testOverall', dest='testOverall', type=bool, default=True,
+    parser.add_argument('--testOverall', dest='testOverall', type=bool, default=False,
                         help='whether to test overall accuracy')
     parser.add_argument('--testGradual', dest='testGradual', type=bool, default=False,
                         help='whether to test with gradual input')
@@ -40,6 +47,7 @@ class Inference(object):
     def __init__(self, model_path, test_file, noise_file, freq, noiseType, outputName, keyStr='data'):
         # structure initialization
         self.input_data = tf.placeholder(tf.float32, [None, None, 1])
+        self.input_label = tf.placeholder(tf.int32, [None, 2])
         self.trainable = tf.placeholder(tf.bool)
         self.predictions = Classifier(self.input_data, self.trainable)
 
@@ -85,7 +93,7 @@ class Inference(object):
             temp_test = self.test_fp[self.keyStr][j*2].reshape(1, self.length)
             temp_test = noise.add_shift(temp_test)
             test_data = np.array(temp_test[0][shift[0]:shift[1]]).reshape(1, new_length)
-            if real_noise is False:
+            if self.noiseType is False:
                 test_data = noise.add_noise(input=test_data, SNR=currSNR)
             else:
                 test_data = noise.add_real_noise(input=test_data, SNR=currSNR)
@@ -97,7 +105,7 @@ class Inference(object):
         # use same number of noise as signal
         for _ in range(len(self.test_fp[self.keyStr])//2):
             test_data = np.zeros(new_length).reshape(1, new_length)
-            if real_noise is False:
+            if self.noiseType is False:
                 test_data = noise.add_noise(input=test_data, SNR=currSNR)
             else:
                 test_data = noise.add_real_noise(input=test_data, SNR=currSNR)
@@ -121,7 +129,7 @@ class Inference(object):
         sen = []
         fa = []
         for snr in snrArr:
-            accuracy, sensitivity, false_alarm = _compute_accuracy(self.sess, snr, test_fp, length=self.length, shift=[0, self.length])
+            accuracy, sensitivity, false_alarm = self._compute_accuracy(snr, length=self.length, shift=[0, self.length])
             print(f"snr: {snr}\n accuracy: {accuracy}, sensitivity: {sensitivity}, false alarm rate: {false_alarm}")
             acc.append(accuracy)
             sen.append(sensitivity)
@@ -149,7 +157,7 @@ class Inference(object):
             print(f"Current snr is: {snr}")
             for stop in timeStamps:
                 currShift = [0, int(stop * self.length)]
-                accuracy, sensitivity, false_alarm = _compute_accuracy(self.sess, snr, test_fp, length=self.length, shift=currShift)
+                accuracy, sensitivity, false_alarm = self._compute_accuracy(snr, length=self.length, shift=currShift)
                 print(f"stop: {currShift}\n accuracy: {accuracy}, sensitivity: {sensitivity}, false alarm rate: {false_alarm}")
                 acc.append(accuracy)
                 sen.append(sensitivity)
@@ -195,7 +203,7 @@ class Inference(object):
                 # sliding window method
                 for start in range(0, len(strain) - window, 1024):
                     curr_strain = strain[start:start + window]
-                    curr_strain = _whiten(curr_strain, psd_H1, float(1./fs))
+                    curr_strain = self._whiten(curr_strain, psd_H1, float(1./fs))
                     curr_strain = curr_strain[crop:-crop]
                     curr_strain = (curr_strain - np.mean(curr_strain)) / np.std(curr_strain)
                     curr_strain = np.array(curr_strain).reshape(1, window - 2 * crop, 1)

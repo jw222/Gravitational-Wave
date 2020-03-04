@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import tensorflow as tf
+import numpy as np
 import datetime
 import sys
 import os
@@ -45,10 +47,10 @@ def parseTrainInput():
 
 if __name__ == '__main__':
     # initialization
-    args = parseInput()
+    args = parseTrainInput()
     output_file = args.output_file
     keyStr = args.keyStr
-    num_batch = 0
+    num_batch = 1
 
     if args.file:
         stdoutOrigin = sys.stdout
@@ -83,7 +85,7 @@ if __name__ == '__main__':
     snrs = [5.0, 4.0, 3.0, 2.0, 1.5, 1.2, 1.0, 0.9, 0.8, 0.7] + [lows for lows in low for i in range(3)]
     num_epoch = int(args.snr_step * len(snrs))
     for i in range(num_epoch):
-        snrMin = snrs[i // snr_step]
+        snrMin = snrs[i // args.snr_step]
         train_data, train_label = new_batch.get_train_batch(snrMin)
         num_batch = len(train_data)
         for j in range(len(train_data)):
@@ -107,9 +109,9 @@ if __name__ == '__main__':
     print('time elapsed: ' + str(end_time - start_time))
 
     # save model
-    model_path = saver.save(sess, '../model/' + test_num + 'Classifier.ckpt')
+    model_path = saver.save(sess, '../model/' + output_file + 'Classifier.ckpt')
     print("Model saved in path: %s", model_path)
-    val_axis = np.arange(step - 1, len(loss_hist), num_batch)
+    val_axis = np.arange(num_batch - 1, len(loss_hist), num_batch)
     plt.figure()
     plt.plot(loss_hist)
     plt.scatter(val_axis, val_loss, c='red')
@@ -122,10 +124,12 @@ if __name__ == '__main__':
     # close current session
     sess.close()
 
+    tf.reset_default_graph()
     # testing
     infer = Inference(model_path, args.test_file, args.noise_file, args.freq, args.noiseType, output_file)
-    if args.testOverall:
-        infer.overall_accuracy()
+    if args.testOverall == True:
+        print(args.testOverall)
+        #infer.overall_accuracy()
     if args.testGradual:
         infer.gradual_accuracy()
     if args.testReal:
