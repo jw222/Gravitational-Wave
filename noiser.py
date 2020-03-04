@@ -4,8 +4,8 @@ import random
 
 
 class Noiser(object):
-    def __init__(self, length):
-        self.real_noise = h5py.File('data/noiseWhitened.hdf5', 'r')
+    def __init__(self, file_path, length):
+        self.real_noise = h5py.File(file_path, 'r')
         self.length = length
 
     def shift_single_wave(self, input):

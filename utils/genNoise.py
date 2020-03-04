@@ -23,7 +23,7 @@ def whiten(strainW, interp_psd, dt):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='generate psd and noise')
-    parser.add_argument('--file', dest='file_path', type=str, default='raw/150914-4096.hdf5',
+    parser.add_argument('--file', dest='file_path', type=str, default='../raw/150914-4096.hdf5',
                         help='file path of raw data')
     parser.add_argument('--freq', dest='freq', type=int, default=8,
                         help='frequency needed')
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     f.close()
 
     # save frequency and psd to file
-    with open('freqs'+ifo+'-'+prefix+'-'+str(freq), 'wb') as fn:
+    with open('../psd/freqs'+ifo+'-'+prefix+'-'+str(freq), 'wb') as fn:
         pickle.dump(freqs, fn)
-    with open('pxx'+ifo+'-'+prefix+'-'+str(freq), 'wb') as fn:
+    with open('../psd/pxx'+ifo+'-'+prefix+'-'+str(freq), 'wb') as fn:
         pickle.dump(pxx, fn)
