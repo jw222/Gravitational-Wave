@@ -58,11 +58,11 @@ if __name__ == '__main__':
     wave_whiten = whiten(strain, psd, 1./float(freq*1024))
     wave_whiten = (wave_whiten - np.mean(wave_whiten)) / np.std(wave_whiten)
     # crop out high edges
-    strain = strain[10000:-10000]
+    wave_whiten = wave_whiten[20000:-20000]
 
     # save noise to file
-    f = h5py.File('noise'+prefix+'-'+str(freq)+ifo+'.hdf5', 'w')
-    f['Dataset1'] = strain
+    f = h5py.File('data/noise'+prefix+'-'+str(freq)+ifo+'.hdf5', 'w')
+    f['Dataset1'] = wave_whiten
     f.close()
 
     # save frequency and psd to file
