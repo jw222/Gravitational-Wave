@@ -9,9 +9,9 @@
 module load wmlce/1.6.2-py3.7
 
 python3 inference.py \
-	--model '../model/B64L1Ra58Classifier.ckpt' \
+	--model '../model/0914H8S1Classifier.ckpt.' \
 	--test 'data/150914H16L1Test.h5' \
 	--noise 'data/noise150914-16H1.hdf5' \
-	--name '0914H16L1' \
+	--name '0914H8L1' \
 	--freq 8 \
 	--testReal True
