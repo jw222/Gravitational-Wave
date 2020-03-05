@@ -189,9 +189,9 @@ class Inference(object):
             # calculate psd
             if self.freq != 16:
                 strain = [strain[i] for i in range(0, len(strain), int(16/self.freq))]
-            with open('psd/freqs'+psdType+'-'+file[:6]+'-'+str(self.freq), 'rb') as fh:
+            with open('psd/freqs'+psdType+'-'+file[:6]+'-'+str(self.freq)+'event', 'rb') as fh:
                 freqs = pickle.load(fh)
-            with open('psd/pxx'+psdType+'-'+file[:6]+'-'+str(self.freq), 'rb') as fh:
+            with open('psd/pxx'+psdType+'-'+file[:6]+'-'+str(self.freq)+'event', 'rb') as fh:
                 Pxx_H1 = pickle.load(fh)
                 psd_H1 = interp1d(freqs, Pxx_H1)
 
