@@ -31,12 +31,19 @@ if __name__ == '__main__':
                         help='data from which detector. Either H1 or L1')
     parser.add_argument('--save', dest='save_prefix', type=str, default='150914',
                         help='file save path')
+    parser.add_argument('--noise', dest='noise', type=bool, default=True,
+                        help='whether to generate the noise file')
+    parser.add_argument('--event', dest='event', type=bool, default=True,
+                        help='whether the generated noise is at the signal event')
     args = parser.parse_args()
 
     fp = args.file_path
     freq = args.freq
     ifo = args.detector
     prefix = args.save_prefix
+    event = ''
+    if args.event:
+        event='event'
 
     # argument check
     if 16 % freq != 0:
@@ -54,19 +61,20 @@ if __name__ == '__main__':
     # whitening signal
     fs = 1024*freq
     pxx, freqs = mlab.psd(strain, Fs=fs, NFFT=fs)
-    psd = interp1d(freqs, pxx)
-    wave_whiten = whiten(strain, psd, 1./float(freq*1024))
-    wave_whiten = (wave_whiten - np.mean(wave_whiten)) / np.std(wave_whiten)
-    # crop out high edges
-    wave_whiten = wave_whiten[20000:-20000]
+    if args.noise:
+        psd = interp1d(freqs, pxx)
+        wave_whiten = whiten(strain, psd, 1./float(freq*1024))
+        wave_whiten = (wave_whiten - np.mean(wave_whiten)) / np.std(wave_whiten)
+        # crop out high edges
+        wave_whiten = wave_whiten[20000:-20000]
 
-    # save noise to file
-    f = h5py.File('data/noise'+prefix+'-'+str(freq)+ifo+'.hdf5', 'w')
-    f['Dataset1'] = wave_whiten
-    f.close()
+        # save noise to file
+        f = h5py.File('data/noise'+prefix+'-'+str(freq)+ifo+'.hdf5', 'w')
+        f['Dataset1'] = wave_whiten
+        f.close()
 
     # save frequency and psd to file
-    with open('psd/freqs'+ifo+'-'+prefix+'-'+str(freq), 'wb') as fn:
+    with open('psd/freqs'+ifo+'-'+prefix+'-'+str(freq)+event, 'wb') as fn:
         pickle.dump(freqs, fn)
-    with open('psd/pxx'+ifo+'-'+prefix+'-'+str(freq), 'wb') as fn:
+    with open('psd/pxx'+ifo+'-'+prefix+'-'+str(freq)+event, 'wb') as fn:
         pickle.dump(pxx, fn)
