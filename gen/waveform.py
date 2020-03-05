@@ -118,9 +118,9 @@ class Waveform:
             Number of tries it took to generate the waveform. If failed, 
             returns -1.
         """
-        with open("/home/jw22/code/gen/" + freqsStr, "rb") as fh:
+        with open("/home/jw22/code/" + freqsStr, "rb") as fh:
             self.freqs = pickle.load(fh)
-        with open("/home/jw22/code/gen/" + pxxStr, "rb") as fh:
+        with open("/home/jw22/code/" + pxxStr, "rb") as fh:
             self.pxx = pickle.load(fh)
             self.psd = interp1d(self.freqs, self.pxx)
 
