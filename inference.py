@@ -66,6 +66,7 @@ class Inference(object):
         self.noiseType = noiseType
         self.outputName = outputName
         self.keyStr = keyStr
+        self.event = test_file[5:11]
 
         # check nan
         if np.isnan(self.test_fp[keyStr]).any():
@@ -180,7 +181,7 @@ class Inference(object):
         crops = [(fs*4, int(fs*1.5)), (fs*8, fs*2)]
         # 245760 for 32 seconds
         event_time = 245760//(16//self.freq)
-        signals = ['150914.hdf5', '151012.hdf5']
+        signals = [self.event+'.hdf5']
 
         for file in signals:
             file_path = 'raw/' + file
@@ -189,9 +190,9 @@ class Inference(object):
             # calculate psd
             if self.freq != 16:
                 strain = [strain[i] for i in range(0, len(strain), int(16/self.freq))]
-            with open('psd/freqs'+psdType+'-'+file[:6]+'-'+str(self.freq)+'event', 'rb') as fh:
+            with open('psd/freqs'+psdType+'-'+file[:6]+'-'+str(self.freq), 'rb') as fh:
                 freqs = pickle.load(fh)
-            with open('psd/pxx'+psdType+'-'+file[:6]+'-'+str(self.freq)+'event', 'rb') as fh:
+            with open('psd/pxx'+psdType+'-'+file[:6]+'-'+str(self.freq), 'rb') as fh:
                 Pxx_H1 = pickle.load(fh)
                 psd_H1 = interp1d(freqs, Pxx_H1)
 
