@@ -83,7 +83,7 @@ class Batch:
         """
         res_wfs = self.exec_manager.run(self.waveforms, work, log_freq=1)
         if self.exec_manager.is_parent():
-            res_array = np.empty((len(self.configs), int(num_secs*1024*freqs)), dtype='float32')
+            res_array = np.empty((len(self.configs), int(num_secs*1024*freq)), dtype='float32')
             res_array[:, :] = np.nan
             for i, wf in enumerate(res_wfs):
                 if not wf.failed:
