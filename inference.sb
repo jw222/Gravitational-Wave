@@ -13,5 +13,5 @@ python3 inference.py \
 	--test 'data/150914H16L1Test.h5' \
 	--noise 'data/noise150914-16H1.hdf5' \
 	--name '0914H16L1' \
-	--freq 16 \
+	--freq 8 \
 	--testReal True

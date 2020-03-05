@@ -179,7 +179,7 @@ class Inference(object):
         fs = self.freq * 1024
         crops = [(fs*4, int(fs*1.5)), (fs*8, fs*2)]
         # 245760 for 32 seconds
-        event_time = 122880
+        event_time = 245760//(16//freq)
         signals = ['150914.hdf5', '151012.hdf5']
 
         for file in signals:
@@ -203,7 +203,7 @@ class Inference(object):
                 # sliding window method
                 for start in range(0, len(strain) - window, 1024):
                     curr_strain = strain[start:start + window]
-                    curr_strain = self._whiten(curr_strain, psd_H1, 1./8192.)#float(1./fs))
+                    curr_strain = self._whiten(curr_strain, psd_H1, float(1./fs))
                     curr_strain = curr_strain[crop:-crop]
                     curr_strain = (curr_strain - np.mean(curr_strain)) / np.std(curr_strain)
                     curr_strain = np.array(curr_strain).reshape(1, window - 2 * crop, 1)
