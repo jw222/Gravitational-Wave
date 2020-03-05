@@ -34,8 +34,8 @@ class Noiser(object):
         return np.asarray(list(map(self.shift_single_wave, input)))
 
     def add_real_noise(self, input, SNR):
-        ramint = random.randint(20, len(self.real_noise['Dataset1']) - self.length)
-        noise_data = self.real_noise['Dataset1'][ramint:(ramint + self.length)]
+        ramint = random.randint(20, len(self.real_noise['data']) - self.length)
+        noise_data = self.real_noise['data'][ramint:(ramint + self.length)]
         noise_data -= np.mean(noise_data)
         noise_data_ = noise_data / np.std(noise_data)
         noise_data_ = np.tile(noise_data_[np.newaxis], [np.asarray(input).shape[0], 1])

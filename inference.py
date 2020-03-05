@@ -22,7 +22,7 @@ def parseTestInput():
                         help='the file of the model')
     parser.add_argument('--test', dest='test_file', type=str, default='data/150914H8S1Test.h5',
                         help='the file of the testing data')
-    parser.add_argument('--noise', dest='noise_file', type=str, default='noise150914-8H1.hdf5',
+    parser.add_argument('--noise', dest='noise_file', type=str, default='150914H8Noise.hdf5',
                         help='the noise file for training')
     parser.add_argument('--name', dest='output_file', type=str, default='1',
                         help='test number')
@@ -190,11 +190,11 @@ class Inference(object):
             # calculate psd
             if self.freq != 16:
                 strain = [strain[i] for i in range(0, len(strain), int(16/self.freq))]
-            with open('psd/freqs'+psdType+'-'+file[:6]+'-'+str(self.freq)+'event', 'rb') as fh:
+            with open('psd/'+file[:6]+psdType[0]+str(self.freq)+'freqs', 'rb') as fh:
                 freqs = pickle.load(fh)
-            with open('psd/pxx'+psdType+'-'+file[:6]+'-'+str(self.freq)+'event', 'rb') as fh:
-                Pxx_H1 = pickle.load(fh)
-                psd_H1 = interp1d(freqs, Pxx_H1)
+            with open('psd/'+file[:6]+psdType[0]+str(self.freq)+'pxx', 'rb') as fh:
+                pxx = pickle.load(fh)
+                psd = interp1d(freqs, pxx)
 
             for window, crop in crops:
                 exist = []
@@ -204,7 +204,7 @@ class Inference(object):
                 # sliding window method
                 for start in range(0, len(strain) - window, 1024):
                     curr_strain = strain[start:start + window]
-                    curr_strain = self._whiten(curr_strain, psd_H1, 1./8192.)#float(1./fs))
+                    curr_strain = self._whiten(curr_strain, psd, 1./float(1./fs))
                     curr_strain = curr_strain[crop:-crop]
                     curr_strain = (curr_strain - np.mean(curr_strain)) / np.std(curr_strain)
                     curr_strain = np.array(curr_strain).reshape(1, window - 2 * crop, 1)

@@ -11,8 +11,7 @@ module load wmlce/1.6.2-py3.7
 python3 classify.py \
 	--train 'data/150914H8S1Train.h5' \
 	--test 'data/150914H8S1Test.h5' \
-	--noise 'data/noise150914-8H1event.hdf5' \
+	--noise 'data/150914H8Noise.hdf5' \
 	--name '0914H8S1' \
-	--snr_step 5 \
 	--freq 8 \
 	--testReal True

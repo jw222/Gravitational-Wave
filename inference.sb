@@ -11,7 +11,7 @@ module load wmlce/1.6.2-py3.7
 python3 inference.py \
 	--model '../model/0914H8S1Classifier.ckpt' \
 	--test 'data/150914H8S1Test.h5' \
-	--noise 'data/noise150914-8H1event.hdf5' \
+	--noise 'data/150914H8Noise.hdf5' \
 	--name '0914H8S1' \
 	--freq 8 \
 	--testReal True

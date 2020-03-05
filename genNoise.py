@@ -33,17 +33,12 @@ if __name__ == '__main__':
                         help='file save path')
     parser.add_argument('--noise', dest='noise', type=bool, default=True,
                         help='whether to generate the noise file')
-    parser.add_argument('--event', dest='event', type=bool, default=True,
-                        help='whether the generated noise is at the signal event')
     args = parser.parse_args()
 
     fp = args.file_path
     freq = args.freq
     ifo = args.detector
     prefix = args.save_prefix
-    event = ''
-    if args.event:
-        event='event'
 
     # argument check
     if 16 % freq != 0:
@@ -69,12 +64,12 @@ if __name__ == '__main__':
         wave_whiten = wave_whiten[20000:-20000]
 
         # save noise to file
-        f = h5py.File('data/noise'+prefix+'-'+str(freq)+ifo+'.hdf5', 'w')
-        f['Dataset1'] = wave_whiten
+        f = h5py.File('data/'+prefix+ifo[0]+str(freq)+'Noise.hdf5', 'w')
+        f['data'] = wave_whiten
         f.close()
 
     # save frequency and psd to file
-    with open('psd/freqs'+ifo+'-'+prefix+'-'+str(freq)+event, 'wb') as fn:
+    with open('psd/'+prefix+ifo[0]+str(freq)+'freqs', 'wb') as fn:
         pickle.dump(freqs, fn)
-    with open('psd/pxx'+ifo+'-'+prefix+'-'+str(freq)+event, 'wb') as fn:
+    with open('psd/'+prefix+ifo[0]+str(freq)+'pxx', 'wb') as fn:
         pickle.dump(pxx, fn)
