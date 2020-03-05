@@ -8,5 +8,4 @@ plot/
 *.png
 *.out
 *.err
-*.txt
 *.ipynb
