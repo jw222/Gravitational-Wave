@@ -1,17 +1,17 @@
 #!/bin/bash
 
-#SBATCH --job-name="0914H8L1"
-#SBATCH --output="0914H8L1.%j.%N.out"
-#SBATCH --error="0914H8L1.%j.%N.err"
+#SBATCH --job-name="0914H8S1"
+#SBATCH --output="0914H8S1.%j.%N.out"
+#SBATCH --error="0914H8S1.%j.%N.err"
 #SBATCH --partition=gpux1
 #SBATCH --time=24
 
 module load wmlce/1.6.2-py3.7
 
 python3 inference.py \
-	--model '../model/0914H8L1Classifier.ckpt' \
-	--test 'data/150914H8L1Test.h5' \
-	--noise 'data/noise150914-8H1.hdf5' \
-	--name '0914H8L1' \
+	--model '../model/0914H8S1Classifier.ckpt' \
+	--test 'data/150914H8S1Test.h5' \
+	--noise 'data/noise150914-8H1event.hdf5' \
+	--name '0914H8S1' \
 	--freq 8 \
 	--testReal True
