@@ -22,7 +22,7 @@ def parseTestInput():
                         help='the file of the model')
     parser.add_argument('--test', dest='test_file', type=str, default='data/150914H8S1Test.h5',
                         help='the file of the testing data')
-    parser.add_argument('--noise', dest='noise_file', type=str, default='150914H8Noise.hdf5',
+    parser.add_argument('--noise', dest='noise_file', type=str, default='data/150914H8Noise.hdf5',
                         help='the noise file for training')
     parser.add_argument('--name', dest='output_file', type=str, default='1',
                         help='test number')
@@ -204,7 +204,7 @@ class Inference(object):
                 # sliding window method
                 for start in range(0, len(strain) - window, 1024):
                     curr_strain = strain[start:start + window]
-                    curr_strain = self._whiten(curr_strain, psd, 1./float(1./fs))
+                    curr_strain = self._whiten(curr_strain, psd, 1./float(fs))
                     curr_strain = curr_strain[crop:-crop]
                     curr_strain = (curr_strain - np.mean(curr_strain)) / np.std(curr_strain)
                     curr_strain = np.array(curr_strain).reshape(1, window - 2 * crop, 1)
