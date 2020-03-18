@@ -180,6 +180,7 @@ class Inference(object):
         fs = self.freq * 1024
         crops = [(fs*4, int(fs*1.5)), (fs*8, fs*2)]
         # 245760 for 32 seconds
+        # 33538048 for 4096 seconds
         event_time = 245760//(16//self.freq)
         signals = [self.event+'.hdf5']
 

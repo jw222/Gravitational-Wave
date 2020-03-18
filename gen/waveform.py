@@ -136,7 +136,7 @@ class Waveform:
             mask = (time >= (-num_secs - 900. * delta_t)) & (time < 1600. * delta_t)  # changed part
             time, amp = time[mask], amp[mask]
             f = interp1d(time, amp, fill_value="extrapolate")
-            time_interp = np.linspace(-num_secs + 750 * num_secs * delta_t, 750 * num_secs * delta_t,
+            time_interp = np.linspace(-num_secs + 1500 * num_secs * delta_t, 1500 * num_secs * delta_t,
                                       int(num_secs / delta_t))  # new one that's working
             amp_interp = f(time_interp)
             self.waveform = self.whiten_wrapper(amp_interp, 1./8192.)
