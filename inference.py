@@ -223,7 +223,7 @@ class Inference(object):
                 plt.xlabel('center time')
                 plt.ylabel('signal existence')
                 plt.title('signal existence with time')
-                plt.savefig(file[:6] + '-' + str(window / fs) + '-' + str(crop / fs) + '-existence.png')
+                plt.savefig(self.outputName + '-' + str(window / fs) + '-' + str(crop / fs) + '-existence.png')
 
                 # plot confidence graph
                 plt.figure()
@@ -232,7 +232,7 @@ class Inference(object):
                 plt.ylabel('confidence')
                 plt.title('confidence with time')
                 plt.grid(True)
-                plt.savefig(file[:6] + '-' + str(window / fs) + '-' + str(crop / fs) + '-confidence.png')
+                plt.savefig(self.outputName + '-' + str(window / fs) + '-' + str(crop / fs) + '-confidence.png')
 
 
 if __name__ == '__main__':
