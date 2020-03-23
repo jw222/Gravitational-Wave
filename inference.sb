@@ -9,7 +9,7 @@
 module load wmlce/1.6.2-py3.7
 
 python3 inference.py \
-	--model '../model/0914H8S1Classifier.ckpt' \
+	--model '../model/0914H8S1Ra5Step50B64Classifier.ckpt' \
 	--test 'data/150914H8S1Test.h5' \
 	--noise 'data/150914H8Noise.hdf5' \
 	--name '0914H8S1' \
