@@ -175,14 +175,14 @@ class Inference(object):
             plt.savefig(self.outputName + '-' + str(snr) + '-GradualClassify.png')
 
     def real_accuracy(self):
-        psdType = 'H1'
+        psdType = 'L1'
         # sliding window data
         fs = self.freq * 1024
         crops = [(fs*4, int(fs*1.5)), (fs*8, fs*2)]
         # 245760 for 32 seconds
         # 33538048 for 4096 seconds
         event_time = 245760//(16//self.freq)
-        signals = [self.event+'.hdf5']
+        signals = [self.event+'L.hdf5']
 
         for file in signals:
             file_path = 'raw/' + file
