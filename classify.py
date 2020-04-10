@@ -165,7 +165,7 @@ def generator(file_name, file_prefix, ratio, pSNR=None):
 
     f_noise = h5py.File('data/' + file_prefix + 'Noise.h5', 'r')
     f_train = h5py.File(file_name, 'r')
-    for waveform in f_train['Input'][:2]:
+    for waveform in f_train['Input']:
         waveform = decimate(waveform, 2)[-8192:]
         if np.random.uniform() < ratio:
             # blank waveform
