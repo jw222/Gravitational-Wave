@@ -4,7 +4,7 @@ import random
 
 
 class Noiser(object):
-    def __init__(self, file_path, length):
+    def __init__(self, file_path, length=8192):
         self.real_noise = h5py.File(file_path, 'r')
         self.length = length
 
@@ -44,9 +44,8 @@ class Noiser(object):
         if not np.isnan(tmp_out[0][0]):
             output = tmp_out * SNR.astype(float)
             output_ = output + noise_data_
-            means_ = np.mean(output_, axis=1)[np.newaxis].transpose()
             stds_ = np.std(output_, axis=1)[np.newaxis].transpose()
-            return (output_ - means_) / stds_
+            return output_ / stds_
         else:
             # this is for adding noise to zeros template
             return noise_data_

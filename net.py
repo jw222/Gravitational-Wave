@@ -1,192 +1,102 @@
 import tensorflow as tf
 
 
-def WaveNet(x, train=True):
-    dilation_rates = [2 ** i for i in range(10)]
-    receptive_field = sum(dilation_rates) + 2
+class ResidualBlock(tf.keras.Model):
+    def __init__(self, dilation_rate, num_filters):
+        super(ResidualBlock, self).__init__()
+        self.x_f = tf.keras.layers.Conv1D(filters=num_filters,
+                                          kernel_size=2,
+                                          padding='same',
+                                          dilation_rate=dilation_rate,
+                                          activation=tf.nn.tanh)
+        self.x_g = tf.keras.layers.Conv1D(filters=num_filters,
+                                          kernel_size=2,
+                                          padding='same',
+                                          dilation_rate=dilation_rate,
+                                          activation=tf.nn.sigmoid)
+        self.multiply = tf.keras.layers.Multiply()
+        self.skip = tf.keras.layers.Conv1D(filters=num_filters,
+                                           kernel_size=1,
+                                           padding='same')
+        self.residual = tf.keras.layers.Conv1D(filters=num_filters,
+                                               kernel_size=1,
+                                               padding='same')
+        self.add = tf.keras.layers.Add()
 
-    # preprocessing causal layer
-    x = tf.layers.conv1d(
-        inputs=x,
-        filters=16,
-        kernel_size=2,
-        padding="same")
-
-    skips = []
-
-    for dilation_rate in dilation_rates:
-        # filter
-        x_f = tf.layers.conv1d(
-            inputs=x,
-            filters=16,
-            kernel_size=2,
-            padding="same",
-            dilation_rate=dilation_rate,
-            activation=tf.nn.tanh)
-
-        # gate
-        x_g = tf.layers.conv1d(
-            inputs=x,
-            filters=16,
-            kernel_size=2,
-            padding="same",
-            dilation_rate=dilation_rate,
-            activation=tf.nn.sigmoid)
-
-        # element wise multiplication
-        z = tf.multiply(x_f, x_g)
-
-        # skip cut to account for receptive field
-        skip = tf.slice(z, [0, receptive_field, 0], [-1, -1, -1])
-
-        # skip postprocessing
-        skip = tf.layers.conv1d(
-            inputs=skip,
-            filters=32,
-            kernel_size=1,
-            padding="same")
-
-        # residual postprocessing
-        z = tf.layers.conv1d(
-            inputs=z,
-            filters=16,
-            kernel_size=1,
-            padding="same")
-
-        # residual connection
-        x = tf.add(x, z)
-
-        # skip append
-        skips.append(skip)
-
-    # add all skip layers and apply activation
-    raw = tf.add_n(skips)
-    raw = tf.nn.relu(raw)
-
-    # postprocessing
-    raw = tf.layers.conv1d(
-        inputs=raw,
-        filters=64,
-        kernel_size=1,
-        padding="same",
-        activation=tf.nn.relu)
-
-    # compress to one channel output
-    raw = tf.layers.conv1d(
-        inputs=raw,
-        filters=1,
-        kernel_size=1,
-        padding="same")
-
-    raw = tf.layers.flatten(raw)
-
-    # get k-highest outputs
-    values, indices = tf.nn.top_k(raw, 1024, False)
-
-    m1 = values
-    m2 = values
-    m1 = tf.layers.dense(m1, units=512, activation=tf.nn.relu)
-    m2 = tf.layers.dense(m2, units=512, activation=tf.nn.relu)
-    m1 = tf.layers.dropout(inputs=m1, rate=0.25, training=train)
-    m2 = tf.layers.dropout(inputs=m2, rate=0.25, training=train)
-    m1 = tf.layers.dense(m1, units=256, activation=tf.nn.relu)
-    m2 = tf.layers.dense(m2, units=256, activation=tf.nn.relu)
-    m1 = tf.layers.dropout(inputs=m1, rate=0.1, training=train)
-    m2 = tf.layers.dropout(inputs=m2, rate=0.1, training=train)
-    m1 = tf.layers.dense(m1, units=128, activation=tf.nn.relu)
-    m2 = tf.layers.dense(m2, units=128, activation=tf.nn.relu)
-    m1 = tf.layers.dropout(inputs=m1, rate=0.25, training=train)
-    m2 = tf.layers.dropout(inputs=m2, rate=0.25, training=train)
-    m1 = tf.layers.dense(m1, units=1, activation=tf.nn.relu)
-    m2 = tf.layers.dense(m2, units=1, activation=tf.nn.relu)
-
-    return tf.concat([m1, m2], 1)
+    def call(self, input):
+        f = self.x_f(input)
+        g = self.x_g(input)
+        z = self.multiply([f, g])
+        r = self.residual(z)
+        s = self.skip(z)
+        x = tf.add(r, input)
+        return x, s
 
 
-def Classifier(x, train=True):
-    dilation_rates = [2 ** i for i in range(10)]
-    receptive_field = sum(dilation_rates) + 2
+class WaveNet(tf.keras.Model):
+    def __init__(self, dilation_layers=6, num_filters=256):
+        super(WaveNet, self).__init__()
+        dilation_rates = [2 ** i for i in range(dilation_layers)]
+        self.pre = tf.keras.layers.Conv1D(filters=num_filters,
+                                          kernel_size=2,
+                                          padding='same',
+                                          activation=tf.nn.relu)
+        self.residual_blocks = [ResidualBlock(dilation_rate, num_filters)
+                                for dilation_rate in dilation_rates]
+        self.add = tf.keras.layers.Add()
+        self.post1 = tf.keras.layers.Conv1D(filters=num_filters//2,
+                                            kernel_size=1,
+                                            padding='same',
+                                            activation=tf.nn.relu)
+        self.post2 = tf.keras.layers.Conv1D(filters=1,
+                                            kernel_size=1,
+                                            padding='same',
+                                            activation=tf.nn.sigmoid)
+        self.flat = tf.keras.layers.Flatten()
 
-    # preprocessing causal layer
-    x = tf.layers.conv1d(
-        inputs=x,
-        filters=16,
-        kernel_size=2,
-        padding="same")
+    def call(self, input):
+        x = self.pre(input)
+        skips = []
+        for residual_block in self.residual_blocks:
+            x, skip = residual_block(x)
+            skips.append(skip)
+        out = self.add(skips)
+        out = tf.nn.relu(out)
+        out = self.post1(out)
+        out = self.post2(out)
+        out = self.flat(out)
+        return out
 
-    skips = []
 
-    for dilation_rate in dilation_rates:
-        # filter
-        x_f = tf.layers.conv1d(
-            inputs=x,
-            filters=16,
-            kernel_size=2,
-            padding="same",
-            dilation_rate=dilation_rate,
-            activation=tf.nn.tanh)
+class TwoChan(tf.keras.Model):
+    def __init__(self, dilation_layers=6, num_filters=256):
+        super(TwoChan, self).__init__()
+        self.chan1 = WaveNet(dilation_layers, num_filters)
+        self.chan2 = WaveNet(dilation_layers, num_filters)
+        self.concat = tf.keras.layers.Concatenate()
+        self.conv1 = tf.keras.layers.Conv1D(filters=512,
+                                            kernel_size=3,
+                                            padding='same',
+                                            activation=tf.nn.relu)
+        self.conv2 = tf.keras.layers.Conv1D(filters=2048,
+                                            kernel_size=3,
+                                            padding='same',
+                                            activation=tf.nn.relu)
+        self.conv3 = tf.keras.layers.Conv1D(filters=1024,
+                                            kernel_size=3,
+                                            padding='same',
+                                            activation=tf.nn.relu)
+        self.conv4 = tf.keras.layers.Conv1D(filters=1,
+                                            kernel_size=3,
+                                            padding='same',
+                                            activation=tf.nn.sigmoid)
 
-        # gate
-        x_g = tf.layers.conv1d(
-            inputs=x,
-            filters=16,
-            kernel_size=2,
-            padding="same",
-            dilation_rate=dilation_rate,
-            activation=tf.nn.sigmoid)
-
-        # element wise multiplication
-        z = tf.multiply(x_f, x_g)
-
-        # skip cut to account for receptive field
-        skip = tf.slice(z, [0, receptive_field, 0], [-1, -1, -1])
-
-        # skip postprocessing
-        skip = tf.layers.conv1d(
-            inputs=skip,
-            filters=32,
-            kernel_size=1,
-            padding="same")
-
-        # residual postprocessing
-        z = tf.layers.conv1d(
-            inputs=z,
-            filters=16,
-            kernel_size=1,
-            padding="same")
-
-        # residual connection
-        x = tf.add(x, z)
-
-        # skip append
-        skips.append(skip)
-
-    # add all skip layers and apply activation
-    raw = tf.add_n(skips)
-    raw = tf.nn.relu(raw)
-
-    # postprocessing
-    raw = tf.layers.conv1d(
-        inputs=raw,
-        filters=64,
-        kernel_size=1,
-        padding="same",
-        activation=tf.nn.relu)
-
-    # compress to one channel output
-    raw = tf.layers.conv1d(
-        inputs=raw,
-        filters=1,
-        kernel_size=1,
-        padding="same")
-
-    raw = tf.layers.flatten(raw)
-
-    # get k-highest outputs
-    values, indices = tf.nn.top_k(raw, 1024, False)
-    values = tf.layers.dense(values, units=128, activation=tf.nn.relu)
-    values = tf.layers.dense(values, units=32, activation=tf.nn.relu)
-    values = tf.layers.dense(values, units=2)
-
-    return values
-    
+    def call(self, input):
+        chan1 = self.chan1(input[0])
+        chan2 = self.chan2(input[1])
+        out = self.concat([chan1, chan2])
+        out = self.conv1(out)
+        out = self.conv2(out)
+        out = self.conv3(out)
+        out = self.conv4(out)
+        return out

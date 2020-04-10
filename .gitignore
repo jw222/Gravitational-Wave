@@ -5,6 +5,10 @@
 __pycache__/
 data/
 plot/
+logs/
+raw/
+model/
+psd/
 *.png
 *.out
 *.err
