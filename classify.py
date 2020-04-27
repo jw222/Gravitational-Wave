@@ -258,6 +258,12 @@ if __name__ == '__main__':
     args = parseTrainInput()
     prefix = args.event + args.channel + str(args.freq)
     fileCheck(prefix)
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    # Currently, memory growth needs to be the same across GPUs
+    #for gpu in gpus:
+    #    tf.config.experimental.set_memory_growth(gpu, True)
+    #tf.debugging.set_log_device_placement(True)
+    print('number of gpus: ', len(gpus))
 
     if args.save_file:
         stdoutOrigin = sys.stdout
@@ -279,10 +285,9 @@ if __name__ == '__main__':
     model = WaveNet(args.num_residuals, args.num_filters)
     tf.keras.backend.clear_session()
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate),
-                  loss=tf.keras.losses.BinaryCrossentropy(),
-                  metrics=[Accuracy(), FalseAlarm(), Sensitivity()])
+                  loss=tf.keras.losses.BinaryCrossentropy())
     history = model.fit(train_dataset, epochs=args.epoch,
-                        validation_data=validation_dataset, validation_freq=100,
+                        validation_data=validation_dataset, validation_freq=10,
                         callbacks=[tensorboard_callback])
 
     model.reset_metrics()
@@ -295,12 +300,13 @@ if __name__ == '__main__':
     plt.ylabel('loss')
     plt.plot(history.history['loss'])
     plt.plot(np.arange(0, args.epoch, 100), history.history['val_loss'])
-    plt.plot(history.history['accuracy'])
-    plt.plot(history.history['false_alarm'])
-    plt.plot(history.history['sensitivity'])
-    plt.legend(['loss', 'val_loss', 'accuracy', 'false_alarm', 'sensitivity'])
+    #plt.plot(history.history['accuracy'])
+    #plt.plot(history.history['false_alarm'])
+    #plt.plot(history.history['sensitivity'])
+    plt.legend(['loss', 'val_loss'])#, 'accuracy', 'false_alarm', 'sensitivity'])
     plt.savefig(args.output + '-loss.png')
 
+    '''
     # test overall accuracy
     result = []
     snrArr = np.array([3, 2.5, 2, 1.5, 1.3, 1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1])
@@ -313,7 +319,6 @@ if __name__ == '__main__':
         test_dataset = test_dataset.repeat(2).batch(args.batch_size)
         curr = model.evaluate(test_dataset)
         result.append(curr)
-        break
     result = np.asarray(result).T
     plt.figure(figsize=(30, 12))
     plt.title('evaluation v.s. peak snr')
@@ -324,6 +329,6 @@ if __name__ == '__main__':
     plt.plot(snrArr, result[3])
     plt.legend(['accuracy', 'false_alarm', 'sensitivity'])
     plt.savefig(args.output+'-evaluation.png')
-
+    '''
     # test real signal detection
     testReal(model, prefix[:-1], 8192*10, 4096, args.output)
