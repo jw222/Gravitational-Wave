@@ -2,7 +2,7 @@ import tensorflow as tf
 import readligo as rl
 import sys
 import argparse
-from net import WaveNet
+from net import TwoChan
 from utils import *
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
