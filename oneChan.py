@@ -49,109 +49,15 @@ def parseTrainInput():
                         help='learning rate for training')
     parser.add_argument('--batch', dest='batch_size', type=int, default=64,
                         help='batch size for training')
-    parser.add_argument('--epoch', dest='epoch', type=int, default=10000,
+    parser.add_argument('--epoch', dest='epoch', type=int, default=100,
                         help='epochs fro training')
+    parser.add_argument('--val_freq', dest='val_freq', type=int, default=10,
+                        help='validation frequency')
     parser.add_argument('--output', dest='output', type=str, default='test',
                         help='output file name')
     parser.add_argument('--save_file', dest='save_file', type=bool, default=False,
                         help='whether cast output to a file')
     return parser.parse_args()
-
-
-class Accuracy(tf.keras.metrics.Metric):
-    def __init__(self, name='accuracy', threshold=0.5, num_points=4096):
-        super(Accuracy, self).__init__(name=name)
-        self.accuracy = self.add_weight(name='acc', initializer='zeros', dtype=tf.float32)
-        self.counter = self.add_weight(name='count', initializer='zeros', dtype=tf.float32)
-        self.threshold = self.add_weight(name='thres', initializer='zeros', dtype=tf.float32)
-        self.num_points = self.add_weight(name='points', initializer='zeros', dtype=tf.int32)
-        self.threshold.assign(threshold)
-        self.num_points.assign(num_points)
-
-    def _category(self, pred):
-        pred = tf.cast(tf.map_fn(lambda x: x > self.threshold, pred, dtype=tf.bool), tf.int32)
-        return tf.reduce_sum(pred) > self.num_points
-
-    def update_state(self, y_true, y_pred, sample_weight=None):
-        y_pred = tf.cast(tf.map_fn(self._category, y_pred, dtype=tf.bool), tf.int32)
-        y_true = tf.cast(tf.reduce_max(y_true, axis=1), tf.int32)
-        values = tf.reduce_mean(tf.cast(y_true == y_pred, tf.float32))
-        new_acc = (self.counter * self.accuracy + values) / (self.counter + 1)
-        self.counter.assign_add(1.0)
-        self.accuracy.assign(new_acc)
-
-    def result(self):
-        return self.accuracy
-
-    def reset_states(self):
-        self.accuracy.assign(0.)
-        self.counter.assign(0.)
-
-
-class FalseAlarm(tf.keras.metrics.Metric):
-    def __init__(self, name='false_alarm', threshold=0.5, num_points=4096):
-        super(FalseAlarm, self).__init__(name=name)
-        self.fp = self.add_weight(name='fp', initializer='zeros', dtype=tf.float32)
-        self.totalN = self.add_weight(name='totalN', initializer='zeros', dtype=tf.float32)
-        self.threshold = self.add_weight(name='thres', initializer='zeros', dtype=tf.float32)
-        self.num_points = self.add_weight(name='points', initializer='zeros', dtype=tf.int32)
-        self.threshold.assign(threshold)
-        self.num_points.assign(num_points)
-
-    def _category(self, pred):
-        pred = tf.cast(tf.map_fn(lambda x: x > self.threshold, pred, dtype=tf.bool), tf.int32)
-        return tf.reduce_sum(pred) > self.num_points
-
-    def update_state(self, y_true, y_pred, sample_weight=None):
-        y_pred = tf.cast(tf.map_fn(self._category, y_pred, dtype=tf.bool), tf.int32)
-        y_true = tf.cast(tf.reduce_max(y_true, axis=1), tf.int32)
-        fp = tf.cast(tf.reduce_sum(tf.cast(
-            tf.map_fn(lambda x: tf.logical_and(x[0] != x[1], x[1] == 0),
-                      tf.stack([y_pred, y_true], axis=1), dtype=tf.bool), tf.int32)), tf.float32)
-        self.fp.assign_add(fp)
-        totalN = tf.cast(tf.reduce_sum(tf.cast(
-            tf.map_fn(lambda x: x == 0, y_true, dtype=tf.bool), tf.int32)), tf.float32)
-        self.totalN.assign_add(totalN)
-
-    def result(self):
-        return self.fp / (self.totalN + 1e-5)
-
-    def reset_states(self):
-        self.fp.assign(0.)
-        self.totalN.assign(0.)
-
-
-class Sensitivity(tf.keras.metrics.Metric):
-    def __init__(self, name='sensitivity', threshold=0.5, num_points=4096):
-        super(Sensitivity, self).__init__(name=name)
-        self.tp = self.add_weight(name='tp', initializer='zeros', dtype=tf.float32)
-        self.totalP = self.add_weight(name='totalP', initializer='zeros', dtype=tf.float32)
-        self.threshold = self.add_weight(name='thres', initializer='zeros', dtype=tf.float32)
-        self.num_points = self.add_weight(name='points', initializer='zeros', dtype=tf.int32)
-        self.threshold.assign(threshold)
-        self.num_points.assign(num_points)
-
-    def _category(self, pred):
-        pred = tf.cast(tf.map_fn(lambda x: x > self.threshold, pred, dtype=tf.bool), tf.int32)
-        return tf.reduce_sum(pred) > self.num_points
-
-    def update_state(self, y_true, y_pred, sample_weight=None):
-        y_pred = tf.cast(tf.map_fn(self._category, y_pred, dtype=tf.bool), tf.int32)
-        y_true = tf.cast(tf.reduce_max(y_true, axis=1), tf.int32)
-        tp = tf.cast(tf.reduce_sum(tf.cast(
-            tf.map_fn(lambda x: tf.logical_and(x[0] == x[1], x[1] == 1),
-                      tf.stack([y_pred, y_true], axis=1), dtype=tf.bool), tf.int32)), tf.float32)
-        self.tp.assign_add(tp)
-        totalP = tf.cast(tf.reduce_sum(tf.cast(
-            tf.map_fn(lambda x: x == 1, y_true, dtype=tf.bool), tf.int32)), tf.float32)
-        self.totalP.assign_add(totalP)
-
-    def result(self):
-        return self.tp / (self.totalP + 1e-5)
-
-    def reset_states(self):
-        self.tp.assign(0.)
-        self.totalP.assign(0.)
 
 
 def generator(file_name, file_prefix, ratio, pSNR=None):
@@ -173,7 +79,7 @@ def generator(file_name, file_prefix, ratio, pSNR=None):
             target = np.zeros(8192)
         else:
             whitened = whiten(waveform, interp_psd)
-            shiftInt = np.random.randint(-4000, 1000)
+            shiftInt = np.random.randint(-1024, 1024)
             whitened = np.roll(whitened, shiftInt)
             if shiftInt >= 0:
                 whitened[:shiftInt] = 0
@@ -215,6 +121,11 @@ def fileCheck(fileStr):
         fn['noise'] = whitened
 
 
+def category(prediction, threshold):
+    processed = np.convolve(prediction, np.ones(1024)) / 1024
+    return np.greater(processed, np.full(len(processed), threshold)).any()
+
+
 def testReal(trained_model, event, crop, step, output):
     # strain data preprocessing
     strain, time, chan_dict = rl.loaddata('raw/' + event + '-4096.hdf5', event[-1] + '1')
@@ -223,13 +134,15 @@ def testReal(trained_model, event, crop, step, output):
     pxx, freqs = mlab.psd(strain, Fs=fs, NFFT=fs)
     interp_psd = interp1d(freqs, pxx)
     whitened = whiten(strain, interp_psd)
-    whitened /= np.std(whitened)
     whitened = whitened[crop:-crop]
+    whitened /= np.std(whitened)
 
     # prepare prediction dataset
     x_predict = []
     for start in range(0, len(whitened)-8192, step):
-        x_predict.append(whitened[start:start+8192])
+        waveform = whitened[start:start+8192]
+        waveform /= np.std(waveform)
+        x_predict.append(waveform)
     x_predict = np.asarray(x_predict)
     x_predict = np.expand_dims(x_predict, axis=-1)
 
@@ -238,20 +151,25 @@ def testReal(trained_model, event, crop, step, output):
     y_predict = np.zeros(len(whitened))
     for start in range(0, len(whitened)-8192, step):
         y_predict[start:start+8192] += y_temp[start//step] * (step/8192.)
-    y_predict = np.convolve(y_predict, np.ones(100)) / 100
+    y_predict = np.convolve(y_predict, np.ones(1024)) / 1024
     plt.figure(figsize=(30, 30))
     counter = 1
-    for threshold in np.arange(0.1, 1.0, 0.1):
+    total_peaks = {}
+    for threshold in np.arange(0.5, 0.9, 0.1):
         peaks, _ = find_peaks(y_predict, height=threshold, distance=8192)
-        plt.subplot('33'+str(counter))
+        plt.subplot(2, 2, counter)
         plt.plot(y_predict)
         plt.plot(peaks, y_predict[peaks], 'x')
-        plt.plot(np.repeat(threshold, len(whitened)), "--", color='gray')
+        plt.plot(np.repeat(threshold, len(y_predict)), "--", color='gray')
+        plt.axvline(x=len(y_predict)/2, color='r')
         plt.xlabel('time step')
         plt.ylabel('probability')
-        plt.title('threshold-' + threshold)
+        plt.title('threshold-' + str(threshold))
         counter += 1
+        total_peaks[threshold] = peaks
     plt.savefig(output + '-testReal.png')
+    total_peaks['middle'] = len(y_predict)/2
+    return total_peaks
 
 
 if __name__ == '__main__':
@@ -259,10 +177,6 @@ if __name__ == '__main__':
     prefix = args.event + args.channel + str(args.freq)
     fileCheck(prefix)
     gpus = tf.config.experimental.list_physical_devices('GPU')
-    # Currently, memory growth needs to be the same across GPUs
-    #for gpu in gpus:
-    #    tf.config.experimental.set_memory_growth(gpu, True)
-    #tf.debugging.set_log_device_placement(True)
     print('number of gpus: ', len(gpus))
 
     if args.save_file:
@@ -287,48 +201,57 @@ if __name__ == '__main__':
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate),
                   loss=tf.keras.losses.BinaryCrossentropy())
     history = model.fit(train_dataset, epochs=args.epoch,
-                        validation_data=validation_dataset, validation_freq=10,
+                        validation_data=validation_dataset, validation_freq=args.val_freq,
                         callbacks=[tensorboard_callback])
 
     model.reset_metrics()
-    model_path = 'model/' + args.output
+    model_path = './model/' + args.output
     model.save_weights(model_path, save_format='tf')
 
-    plt.figure(figsize=(30, 12))
+    plt.figure(figsize=(15, 8))
     plt.title('loss history')
     plt.xlabel('epochs')
     plt.ylabel('loss')
     plt.plot(history.history['loss'])
-    plt.plot(np.arange(0, args.epoch, 100), history.history['val_loss'])
-    #plt.plot(history.history['accuracy'])
-    #plt.plot(history.history['false_alarm'])
-    #plt.plot(history.history['sensitivity'])
-    plt.legend(['loss', 'val_loss'])#, 'accuracy', 'false_alarm', 'sensitivity'])
+    plt.plot(np.arange(0, args.epoch, args.val_freq), history.history['val_loss'])
+    plt.legend(['loss', 'val_loss'])
     plt.savefig(args.output + '-loss.png')
 
-    '''
     # test overall accuracy
     result = []
-    snrArr = np.array([3, 2.5, 2, 1.5, 1.3, 1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1])
+    snrArr = np.array([3, 2.5, 2, 1.6, 1.3, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1])
     snrArr = np.flip(snrArr)
     for snr in snrArr:
-        test_dataset = tf.data.Dataset.from_generator(generator,
-                                                      (tf.float64, tf.float64),
-                                                      ((8192, 1), 8192),
-                                                      (args.test_file, prefix, args.blank_ratio, snr))
-        test_dataset = test_dataset.repeat(2).batch(args.batch_size)
-        curr = model.evaluate(test_dataset)
-        result.append(curr)
+        test_dataset_exist = tf.data.Dataset.from_generator(generator,
+                                                            (tf.float64, tf.float64),
+                                                            ((8192, 1), 8192),
+                                                            (args.test_file, prefix, 0., snr))
+        test_dataset_exist = test_dataset_exist.batch(args.batch_size)
+        exist = model.predict(test_dataset_exist)
+        test_dataset_blank = tf.data.Dataset.from_generator(generator,
+                                                            (tf.float64, tf.float64),
+                                                            ((8192, 1), 8192),
+                                                            (args.test_file, prefix, 1., snr))
+        test_dataset_blank = test_dataset_blank.batch(args.batch_size)
+        blank = model.predict(test_dataset_blank)
+
+        fp = sum([category(pred, 0.5) for pred in blank]) / blank.shape[0]
+        sen = sum([category(pred, 0.5) for pred in exist]) / exist.shape[0]
+        acc = ((1. - fp) + sen) / 2.
+        result.append((fp, sen, acc))
+
     result = np.asarray(result).T
     plt.figure(figsize=(30, 12))
     plt.title('evaluation v.s. peak snr')
     plt.xlabel('peak snr')
     plt.ylabel('percentage')
+    plt.plot(snrArr, result[0])
     plt.plot(snrArr, result[1])
     plt.plot(snrArr, result[2])
-    plt.plot(snrArr, result[3])
-    plt.legend(['accuracy', 'false_alarm', 'sensitivity'])
-    plt.savefig(args.output+'-evaluation.png')
-    '''
+    plt.legend(['false_alarm', 'sensitivity', 'accuracy'])
+    plt.savefig(args.output + '-evaluation.png')
+
     # test real signal detection
-    testReal(model, prefix[:-1], 8192*10, 4096, args.output)
+    peaks = testReal(model, prefix[:-1], 8192*10, 4096, args.output)
+    for key in peaks:
+        print(key, ': ', peaks[key])
