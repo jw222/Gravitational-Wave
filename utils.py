@@ -100,9 +100,9 @@ def testReal(trained_model, event, crop, step, output, length, twoChan=False):
             waveform_H /= np.std(waveform_H)
             waveform_L = whitened_L[start:start + 8192]
             waveform_L /= np.std(waveform_L)
-            x_predict.append([waveform_H, waveform_L])
+            waveform = np.stack([waveform_H, waveform_L], axis=-1)
+            x_predict.append(waveform)
         x_predict = np.asarray(x_predict)
-        x_predict = np.expand_dims(x_predict, axis=-1)
 
     # get prediction
     y_temp = trained_model.predict(x_predict)
@@ -113,7 +113,7 @@ def testReal(trained_model, event, crop, step, output, length, twoChan=False):
     plt.figure(figsize=(30, 30))
     counter = 1
     total_peaks = {}
-    for threshold in np.arange(0.5, 0.9, 0.1):
+    for threshold in [0.5, 0.6, 0.7, 0.8]:
         peaks, _ = find_peaks(y_predict, height=threshold, distance=8192)
         plt.subplot(2, 2, counter)
         plt.plot(y_predict)

@@ -96,8 +96,7 @@ def generator(file_name, event, ratio, pSNR=None):
         output_L = whitened_L * pSNR + noise_L
         output_H /= np.std(output_H)
         output_L /= np.std(output_L)
-        output = np.stack([output_H, output_L], axis=0)
-        output = np.reshape(output, (2, 8192, 1))
+        output = np.stack([output_H, output_L], axis=-1)
         yield output, target
 
 
@@ -114,14 +113,14 @@ if __name__ == '__main__':
 
     train_dataset = tf.data.Dataset.from_generator(generator,
                                                    (tf.float64, tf.float64),
-                                                   ((2, 8192, 1), 8192),
+                                                   ((8192, 2), 8192),
                                                    (args.train_file, args.event, args.blank_ratio))
-    train_dataset = train_dataset.repeat(2).shuffle(buffer_size=1024).batch(args.batch_size)
+    train_dataset = train_dataset.shuffle(buffer_size=9861).batch(args.batch_size)
     validation_dataset = tf.data.Dataset.from_generator(generator,
                                                         (tf.float64, tf.float64),
-                                                        ((2, 8192, 1), 8192),
+                                                        ((8192, 2), 8192),
                                                         (args.test_file, args.event, args.blank_ratio))
-    validation_dataset = validation_dataset.shuffle(buffer_size=1024).batch(args.batch_size)
+    validation_dataset = validation_dataset.batch(args.batch_size)
 
     log_dir = './logs/' + args.output + '/'
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
@@ -146,7 +145,7 @@ if __name__ == '__main__':
     plt.xlabel('epochs')
     plt.ylabel('loss')
     plt.plot(history.history['loss'])
-    plt.plot(np.arange(0, args.epoch, args.val_freq), history.history['val_loss'])
+    plt.plot(np.arange(args.val_freq, args.epoch, args.val_freq), history.history['val_loss'])
     plt.legend(['loss', 'val_loss'])
     plt.savefig(args.output + '-loss.png')
 

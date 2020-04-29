@@ -77,29 +77,38 @@ class TwoChan(tf.keras.Model):
         self.chanL = WaveNet(dilation_layers, num_filters)
         self.chanL.load_weights(model_L)
         self.chanL.trainable = False
-        self.conv1 = tf.keras.layers.Conv1D(filters=num_filters,
-                                            kernel_size=5,
+        self.conv1 = tf.keras.layers.Conv1D(filters=128,
+                                            kernel_size=128,
+                                            strides=8,
                                             padding='same',
                                             activation=tf.nn.relu)
-        self.conv2 = tf.keras.layers.Conv1D(filters=num_filters,
-                                            kernel_size=5,
+        self.up1 = tf.keras.layers.UpSampling1D(size=8)
+        self.conv2 = tf.keras.layers.Conv1D(filters=128,
+                                            kernel_size=128,
+                                            strides=8,
                                             padding='same',
                                             activation=tf.nn.relu)
-        self.conv3 = tf.keras.layers.Conv1D(filters=num_filters,
-                                            kernel_size=5,
+        self.up2 = tf.keras.layers.UpSampling1D(size=8)
+        self.conv3 = tf.keras.layers.Conv1D(filters=128,
+                                            kernel_size=128,
+                                            strides=8,
                                             padding='same',
                                             activation=tf.nn.relu)
+        self.up3 = tf.keras.layers.UpSampling1D(size=8)
         self.conv4 = tf.keras.layers.Conv1D(filters=1,
-                                            kernel_size=5,
+                                            kernel_size=64,
                                             padding='same',
                                             activation=tf.nn.sigmoid)
 
     def call(self, input):
-        H = self.chanH(input[0])
-        L = self.chanL(input[1])
+        H, L = tf.unstack(input, axis=-1)
+        H = tf.expand_dims(H, axis=-1)
+        L = tf.expand_dims(L, axis=-1)
+        H = self.chanH(H)
+        L = self.chanL(L)
         out = tf.stack([H, L], axis=-1)
-        out = self.conv1(out)
-        out = self.conv2(out)
-        out = self.conv3(out)
+        out = self.up1(self.conv1(out))
+        out = self.up2(self.conv2(out))
+        out = self.up3(self.conv3(out))
         out = self.conv4(out)
         return out
