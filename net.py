@@ -77,7 +77,6 @@ class TwoChan(tf.keras.Model):
         self.chanL = WaveNet(dilation_layers, num_filters)
         self.chanL.load_weights(model_L)
         self.chanL.trainable = False
-        self.concat = tf.keras.layers.Concatenate()
         self.conv1 = tf.keras.layers.Conv1D(filters=num_filters,
                                             kernel_size=5,
                                             padding='same',
@@ -98,7 +97,7 @@ class TwoChan(tf.keras.Model):
     def call(self, input):
         H = self.chanH(input[0])
         L = self.chanL(input[1])
-        out = self.concat([H, L])
+        out = tf.stack([H, L], axis=-1)
         out = self.conv1(out)
         out = self.conv2(out)
         out = self.conv3(out)
