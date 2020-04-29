@@ -48,12 +48,12 @@ def generator(file_name, event, ratio, pSNR=None):
     event = event.decode('utf-8')
     with open('psd/' + event + 'H8freqs', 'rb') as fh:
         freqs_H = pickle.load(fh)
-    with open('psd/' + file_prefix + 'H8pxx', 'rb') as fh:
+    with open('psd/' + event + 'H8pxx', 'rb') as fh:
         pxx_H = pickle.load(fh)
         interp_psd_H = interp1d(freqs, pxx)
     with open('psd/' + event + 'L8freqs', 'rb') as fh:
         freqs_L = pickle.load(fh)
-    with open('psd/' + file_prefix + 'L8pxx', 'rb') as fh:
+    with open('psd/' + event + 'L8pxx', 'rb') as fh:
         pxx_L = pickle.load(fh)
         interp_psd_L = interp1d(freqs, pxx)
 
