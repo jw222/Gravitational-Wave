@@ -69,32 +69,36 @@ class WaveNet(tf.keras.Model):
 
 
 class TwoChan(tf.keras.Model):
-    def __init__(self, dilation_layers=6, num_filters=256):
+    def __init__(self, model_H, model_L, dilation_layers=6, num_filters=256):
         super(TwoChan, self).__init__()
-        self.chan1 = WaveNet(dilation_layers, num_filters)
-        self.chan2 = WaveNet(dilation_layers, num_filters)
+        self.chanH = WaveNet(dilation_layers, num_filters)
+        self.chanH.load_weights(model_H)
+        self.chanH.trainable = False
+        self.chanL = WaveNet(dilation_layers, num_filters)
+        self.chanL.load_weights(model_L)
+        self.chanL.trainable = False
         self.concat = tf.keras.layers.Concatenate()
-        self.conv1 = tf.keras.layers.Conv1D(filters=512,
-                                            kernel_size=3,
+        self.conv1 = tf.keras.layers.Conv1D(filters=num_filters,
+                                            kernel_size=5,
                                             padding='same',
                                             activation=tf.nn.relu)
-        self.conv2 = tf.keras.layers.Conv1D(filters=2048,
-                                            kernel_size=3,
+        self.conv2 = tf.keras.layers.Conv1D(filters=num_filters,
+                                            kernel_size=5,
                                             padding='same',
                                             activation=tf.nn.relu)
-        self.conv3 = tf.keras.layers.Conv1D(filters=1024,
-                                            kernel_size=3,
+        self.conv3 = tf.keras.layers.Conv1D(filters=num_filters,
+                                            kernel_size=5,
                                             padding='same',
                                             activation=tf.nn.relu)
         self.conv4 = tf.keras.layers.Conv1D(filters=1,
-                                            kernel_size=3,
+                                            kernel_size=5,
                                             padding='same',
                                             activation=tf.nn.sigmoid)
 
     def call(self, input):
-        chan1 = self.chan1(input[0])
-        chan2 = self.chan2(input[1])
-        out = self.concat([chan1, chan2])
+        H = self.chanH(input[0])
+        L = self.chanL(input[1])
+        out = self.concat([H, L])
         out = self.conv1(out)
         out = self.conv2(out)
         out = self.conv3(out)

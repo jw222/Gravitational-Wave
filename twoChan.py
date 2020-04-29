@@ -6,6 +6,7 @@ from net import WaveNet
 from utils import *
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
+
 def parseInput():
     # parsing argument
     parser = argparse.ArgumentParser(description='Training')
@@ -102,8 +103,8 @@ def generator(file_name, event, ratio, pSNR=None):
 
 if __name__ == '__main__':
     args = parseInput()
-    fileCheck(event + 'H8')
-    fileCheck(event + 'L8')
+    fileCheck(args.event + 'H8')
+    fileCheck(args.event + 'L8')
     gpus = tf.config.experimental.list_physical_devices('GPU')
     print('number of gpus: ', len(gpus))
 
@@ -156,14 +157,14 @@ if __name__ == '__main__':
     for snr in snrArr:
         test_dataset_exist = tf.data.Dataset.from_generator(generator,
                                                             (tf.float64, tf.float64),
-                                                            ((8192, 1), 8192),
-                                                            (args.test_file, prefix, 0., snr))
+                                                            ((2, 8192, 1), 8192),
+                                                            (args.test_file, args.event, 0., snr))
         test_dataset_exist = test_dataset_exist.batch(args.batch_size)
         exist = model.predict(test_dataset_exist)
         test_dataset_blank = tf.data.Dataset.from_generator(generator,
                                                             (tf.float64, tf.float64),
-                                                            ((8192, 1), 8192),
-                                                            (args.test_file, prefix, 1., snr))
+                                                            ((2, 8192, 1), 8192),
+                                                            (args.test_file, args.event, 1., snr))
         test_dataset_blank = test_dataset_blank.batch(args.batch_size)
         blank = model.predict(test_dataset_blank)
 
@@ -184,7 +185,7 @@ if __name__ == '__main__':
     plt.savefig(args.output + '-evaluation.png')
 
     # test real signal detection
-    peaks = testReal(model, prefix[:-1], 8192*10, 4096, args.output, 4096)
+    peaks = testReal(model, event, 8192*10, 4096, args.output, 4096, True)
     for key in peaks:
         print(key, ': ', peaks[key])
 
