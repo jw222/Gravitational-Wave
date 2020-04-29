@@ -50,12 +50,12 @@ def generator(file_name, event, ratio, pSNR=None):
         freqs_H = pickle.load(fh)
     with open('psd/' + event + 'H8pxx', 'rb') as fh:
         pxx_H = pickle.load(fh)
-        interp_psd_H = interp1d(freqs, pxx)
+        interp_psd_H = interp1d(freqs_H, pxx_H)
     with open('psd/' + event + 'L8freqs', 'rb') as fh:
         freqs_L = pickle.load(fh)
     with open('psd/' + event + 'L8pxx', 'rb') as fh:
         pxx_L = pickle.load(fh)
-        interp_psd_L = interp1d(freqs, pxx)
+        interp_psd_L = interp1d(freqs_L, pxx_L)
 
     f_noise_H = h5py.File('data/' + event + 'H8Noise.h5', 'r')
     f_noise_L = h5py.File('data/' + event + 'L8Noise.h5', 'r')
