@@ -111,7 +111,7 @@ if __name__ == '__main__':
     tf.keras.backend.clear_session()
 
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate),
-                  loss=tf.keras.losses.MeanSquaredError())
+                  loss=tf.keras.losses.BinaryCrossentropy())
 
     if args.model_path is not None:
         model.load_weights(args.model_path)
@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
     # test overall accuracy
     result = []
-    snrArr = np.array([3, 2.5, 2, 1.6, 1.3, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1])
+    snrArr = np.array([3, 2, 1.5, 1.3, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1])
     snrArr = np.flip(snrArr)
     for snr in snrArr:
         test_dataset_exist = tf.data.Dataset.from_generator(generator,

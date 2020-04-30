@@ -89,8 +89,8 @@ class TwoChan(tf.keras.Model):
                                             padding='same',
                                             activation=tf.nn.relu)
         self.up2 = tf.keras.layers.UpSampling1D(size=8)
-        self.conv3 = tf.keras.layers.Conv1D(filters=128,
-                                            kernel_size=128,
+        self.conv3 = tf.keras.layers.Conv1D(filters=256,
+                                            kernel_size=256,
                                             strides=8,
                                             padding='same',
                                             activation=tf.nn.relu)
@@ -99,6 +99,7 @@ class TwoChan(tf.keras.Model):
                                             kernel_size=64,
                                             padding='same',
                                             activation=tf.nn.sigmoid)
+        self.flat = tf.keras.layers.Flatten()
 
     def call(self, input):
         H, L = tf.unstack(input, axis=-1)
@@ -111,4 +112,5 @@ class TwoChan(tf.keras.Model):
         out = self.up2(self.conv2(out))
         out = self.up3(self.conv3(out))
         out = self.conv4(out)
+        out = self.flat(out)
         return out

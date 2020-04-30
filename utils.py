@@ -81,10 +81,10 @@ def testReal(trained_model, event, crop, step, output, length, twoChan=False):
         interp_psd_H = interp1d(freqs_H, pxx_H)
         pxx_L, freqs_L = mlab.psd(strain_L, Fs=fs, NFFT=fs)
         interp_psd_L = interp1d(freqs_L, pxx_L)
-        whitened_H = whiten_H(strain_H, interp_psd_H)
+        whitened_H = whiten(strain_H, interp_psd_H)
         whitened_H = whitened_H[crop:-crop]
         whitened_H /= np.std(whitened_H)
-        whitened_L = whiten_L(strain_L, interp_psd_L)
+        whitened_L = whiten(strain_L, interp_psd_L)
         whitened_L = whitened_L[crop:-crop]
         whitened_L /= np.std(whitened_L)
 
