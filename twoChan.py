@@ -2,6 +2,7 @@ import tensorflow as tf
 import readligo as rl
 import sys
 import argparse
+import time
 from net import TwoChan
 from utils import *
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
@@ -110,7 +111,10 @@ if __name__ == '__main__':
     if args.save_file:
         stdoutOrigin = sys.stdout
         sys.stdout = open(args.output + '.txt', 'w')
-
+    '''
+    if not os.path.exists(args.model_H + '.index') or not os.path.exists(args.model_L + '.index'):
+        time.sleep(1800)
+    '''
     train_dataset = tf.data.Dataset.from_generator(generator,
                                                    (tf.float64, tf.float64),
                                                    ((8192, 2), 8192),
@@ -128,7 +132,7 @@ if __name__ == '__main__':
     tf.keras.backend.clear_session()
 
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate),
-                  loss=tf.keras.losses.BinaryCrossentropy())
+                  loss=tf.keras.losses.MeanSquaredError())
 
     if args.model_path is not None:
         model.load_weights(args.model_path)
@@ -184,7 +188,7 @@ if __name__ == '__main__':
     plt.savefig(args.output + '-evaluation.png')
 
     # test real signal detection
-    peaks = testReal(model, event, 8192*10, 4096, args.output, 4096, True)
+    peaks = testReal(model, args.event, 8192*10, 4096, args.output, 4096, True)
     for key in peaks:
         print(key, ': ', peaks[key])
 

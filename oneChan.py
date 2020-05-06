@@ -111,7 +111,7 @@ if __name__ == '__main__':
     tf.keras.backend.clear_session()
 
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate),
-                  loss=tf.keras.losses.BinaryCrossentropy())
+                  loss=tf.keras.losses.MeanSquaredError())
 
     if args.model_path is not None:
         model.load_weights(args.model_path)
