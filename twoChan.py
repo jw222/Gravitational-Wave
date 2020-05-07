@@ -44,7 +44,7 @@ def parseInput():
     return parser.parse_args()
 
 
-def generator(file_name, event, ratio, pSNR=None):
+def generator(file_name, event, ratio, pSNR=[0.5, 1.5]):
     file_name = file_name.decode('utf-8')
     event = event.decode('utf-8')
     with open('psd/' + event + 'H8freqs', 'rb') as fh:
@@ -89,12 +89,12 @@ def generator(file_name, event, ratio, pSNR=None):
         noise_H = f_noise_H['noise'][noiseInt:noiseInt+8192]
         noiseInt = np.random.randint(20, len(f_noise_L['noise']) - 8192)
         noise_L = f_noise_L['noise'][noiseInt:noiseInt+8192]
-        if pSNR is None:
-            pSNR = np.random.uniform(0.5, 1.5)
+        snr1 = np.random.uniform(pSNR[0], pSNR[1])
+        snr2 = np.random.uniform(pSNR[0], pSNR[1])
         noise_H /= np.std(noise_H)
         noise_L /= np.std(noise_L)
-        output_H = whitened_H * pSNR + noise_H
-        output_L = whitened_L * pSNR + noise_L
+        output_H = whitened_H * snr1 + noise_H
+        output_L = whitened_L * snr2 + noise_L
         output_H /= np.std(output_H)
         output_L /= np.std(output_L)
         output = np.stack([output_H, output_L], axis=-1)
@@ -111,46 +111,37 @@ if __name__ == '__main__':
     if args.save_file:
         stdoutOrigin = sys.stdout
         sys.stdout = open(args.output + '.txt', 'w')
-    '''
-    if not os.path.exists(args.model_H + '.index') or not os.path.exists(args.model_L + '.index'):
+
+    if not (os.path.exists(args.model_H + '.index') and os.path.exists(args.model_L + '.index')):
         time.sleep(1800)
-    '''
-    train_dataset = tf.data.Dataset.from_generator(generator,
-                                                   (tf.float64, tf.float64),
-                                                   ((8192, 2), 8192),
-                                                   (args.train_file, args.event, args.blank_ratio))
-    train_dataset = train_dataset.shuffle(buffer_size=9861).batch(args.batch_size)
-    validation_dataset = tf.data.Dataset.from_generator(generator,
-                                                        (tf.float64, tf.float64),
-                                                        ((8192, 2), 8192),
-                                                        (args.test_file, args.event, args.blank_ratio))
-    validation_dataset = validation_dataset.batch(args.batch_size)
+    time.sleep(5)
 
-    log_dir = './logs/' + args.output + '/'
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
     model = TwoChan(args.model_H, args.model_L, args.num_residuals, args.num_filters)
-    tf.keras.backend.clear_session()
-
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate),
-                  loss=tf.keras.losses.MeanSquaredError())
-
     if args.model_path is not None:
         model.load_weights(args.model_path)
+    optim = tf.keras.optimizers.Adam(learning_rate=args.learning_rate)
 
-    history = model.fit(train_dataset, epochs=args.epoch,
-                        validation_data=validation_dataset, validation_freq=args.val_freq,
-                        callbacks=[tensorboard_callback])
+    losses = []
+    maxSNR = np.linspace(1.75, 1.0, args.epoch)
+    for epoch in range(args.epoch):
+        train_dataset = tf.data.Dataset.from_generator(generator,
+                                                       (tf.float64, tf.float64),
+                                                       ((8192, 2), 8192),
+                                                       (args.train_file, prefix, args.blank_ratio, (0.5, maxSNR[epoch])))
+        train_dataset = train_dataset.shuffle(buffer_size=9861).batch(args.batch_size)
+        for (batch_n, (input, target)) in enumerate(train_dataset):
+            loss = train_step(optim, model, input, target)
+            losses.append(loss)
+            print(f'epoch {epoch} batch {batch_n} has loss: {loss}')
 
     model_path = './model/' + args.output
     model.save_weights(model_path, save_format='tf')
 
     plt.figure(figsize=(15, 8))
     plt.title('loss history')
-    plt.xlabel('epochs')
+    plt.xlabel('batch number')
     plt.ylabel('loss')
-    plt.plot(history.history['loss'])
-    plt.plot(np.arange(args.val_freq, args.epoch, args.val_freq), history.history['val_loss'])
-    plt.legend(['loss', 'val_loss'])
+    plt.plot(losses)
     plt.savefig(args.output + '-loss.png')
 
     # test overall accuracy

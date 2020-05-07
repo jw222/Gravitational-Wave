@@ -10,12 +10,12 @@ module load wmlce/1.7.0-py3.7
 
 python3 oneChan.py \
 	--event 151012 \
-	--channel L \
+	--channel H \
 	--freq 8 \
 	--num_filters 256 \
 	--num_residuals 6 \
 	--blank_ratio 0.5 \
-	--lr 1e-4 \
+	--lr 1e-5 \
 	--batch 32 \
-	--epoch 25 \
-	--output 151012L8L4E25F256B32MSE
+	--epoch 100 \
+	--output 151012H8L5E100F256B32MSE

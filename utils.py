@@ -10,6 +10,18 @@ from scipy.signal import find_peaks
 from scipy.interpolate import interp1d
 
 
+def train_step(optimizer, train_model, input, target):
+    with tf.GradientTape() as tape:
+        predictions = train_model(input)
+        loss = tf.reduce_mean(
+            tf.keras.losses.MeanSquaredError(
+                target, predictions))
+    grads = tape.gradient(loss, train_model.trainable_variables)
+    optimizer.apply_gradients(zip(grads, train_model.trainable_variables))
+
+    return loss
+
+
 def whiten(strainW, interp_psd, dt=1./8192.):
     Nt = len(strainW)
     freqsW = np.fft.rfftfreq(Nt, dt)

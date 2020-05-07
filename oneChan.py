@@ -43,7 +43,7 @@ def parseInput():
     return parser.parse_args()
 
 
-def generator(file_name, file_prefix, ratio, pSNR=None):
+def generator(file_name, file_prefix, ratio, pSNR=[0.5, 1.5]):
     file_name = file_name.decode('utf-8')
     file_prefix = file_prefix.decode('utf-8')
     with open('psd/' + file_prefix + 'freqs', 'rb') as fh:
@@ -74,10 +74,9 @@ def generator(file_name, file_prefix, ratio, pSNR=None):
             target[max(shiftInt, 0):merger] = 1.0
         noiseInt = np.random.randint(20, len(f_noise['noise']) - 8192)
         noise = f_noise['noise'][noiseInt:noiseInt+8192]
-        if pSNR is None:
-            pSNR = np.random.uniform(0.5, 1.5)
+        snr = np.random.uniform(pSNR[0], pSNR[1])
         noise /= np.std(noise)
-        output = whitened * pSNR + noise
+        output = whitened * snr + noise
         output /= np.std(output)
         output = output.reshape(8192, 1)
         yield output, target
@@ -94,42 +93,32 @@ if __name__ == '__main__':
         stdoutOrigin = sys.stdout
         sys.stdout = open(args.output + '.txt', 'w')
 
-    train_dataset = tf.data.Dataset.from_generator(generator,
-                                                   (tf.float64, tf.float64),
-                                                   ((8192, 1), 8192),
-                                                   (args.train_file, prefix, args.blank_ratio))
-    train_dataset = train_dataset.shuffle(buffer_size=9861).batch(args.batch_size)
-    validation_dataset = tf.data.Dataset.from_generator(generator,
-                                                        (tf.float64, tf.float64),
-                                                        ((8192, 1), 8192),
-                                                        (args.test_file, prefix, args.blank_ratio))
-    validation_dataset = validation_dataset.batch(args.batch_size)
-
-    log_dir = './logs/' + args.output + '/'
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
     model = WaveNet(args.num_residuals, args.num_filters)
-    tf.keras.backend.clear_session()
-
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate),
-                  loss=tf.keras.losses.MeanSquaredError())
-
     if args.model_path is not None:
         model.load_weights(args.model_path)
+    optim = tf.keras.optimizers.Adam(learning_rate=args.learning_rate)
 
-    history = model.fit(train_dataset, epochs=args.epoch,
-                        validation_data=validation_dataset, validation_freq=args.val_freq,
-                        callbacks=[tensorboard_callback])
+    losses = []
+    maxSNR = np.linspace(1.75, 1.0, args.epoch)
+    for epoch in range(args.epoch):
+        train_dataset = tf.data.Dataset.from_generator(generator,
+                                                       (tf.float64, tf.float64),
+                                                       ((8192, 1), 8192),
+                                                       (args.train_file, prefix, args.blank_ratio, (0.5, maxSNR[epoch])))
+        train_dataset = train_dataset.shuffle(buffer_size=9861).batch(args.batch_size)
+        for (batch_n, (input, target)) in enumerate(train_dataset):
+            loss = train_step(optim, model, input, target)
+            losses.append(loss)
+            print(f'epoch {epoch} batch {batch_n} has loss: {loss}')
 
     model_path = './model/' + args.output
     model.save_weights(model_path, save_format='tf')
 
     plt.figure(figsize=(15, 8))
     plt.title('loss history')
-    plt.xlabel('epochs')
+    plt.xlabel('batch number')
     plt.ylabel('loss')
-    plt.plot(history.history['loss'])
-    plt.plot(np.arange(args.val_freq, args.epoch, args.val_freq), history.history['val_loss'])
-    plt.legend(['loss', 'val_loss'])
+    plt.plot(losses)
     plt.savefig(args.output + '-loss.png')
 
     # test overall accuracy
