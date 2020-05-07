@@ -9,13 +9,13 @@
 module load wmlce/1.7.0-py3.7
 
 python3 twoChan.py \
-    --model_H model/151012H8L4E25F256B32BCE \
-    --model_L model/151012L8L4E25F256B32BCE \
+    --model_H model/151012H8L5E25F256B16MSE \
+    --model_L model/151012L8L5E25F256B16MSE \
 	--event 151012 \
 	--num_filters 256 \
 	--num_residuals 6 \
-	--blank_ratio 0.5 \
-	--lr 1e-4 \
-	--batch 32 \
-	--epoch 25 \
-	--output 151012L4E25F256B32BCE_MSE
+	--blank_ratio 0.55 \
+	--lr 1e-5 \
+	--batch 16 \
+	--epoch 100 \
+	--output 151012L5Br55E100F256B16MSE

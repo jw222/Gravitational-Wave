@@ -105,6 +105,7 @@ if __name__ == '__main__':
     args = parseInput()
     fileCheck(args.event + 'H8')
     fileCheck(args.event + 'L8')
+    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
     gpus = tf.config.experimental.list_physical_devices('GPU')
     print('number of gpus: ', len(gpus))
 
@@ -119,7 +120,9 @@ if __name__ == '__main__':
     model = TwoChan(args.model_H, args.model_L, args.num_residuals, args.num_filters)
     if args.model_path is not None:
         model.load_weights(args.model_path)
-    optim = tf.keras.optimizers.Adam(learning_rate=args.learning_rate)
+    model.build((None, 8192, 2))
+    optimizer = tf.keras.optimizers.Adam(learning_rate=args.learning_rate)
+    criteria = tf.keras.losses.MeanSquaredError()
 
     losses = []
     maxSNR = np.linspace(1.75, 1.0, args.epoch)
@@ -130,7 +133,11 @@ if __name__ == '__main__':
                                                        (args.train_file, prefix, args.blank_ratio, (0.5, maxSNR[epoch])))
         train_dataset = train_dataset.shuffle(buffer_size=9861).batch(args.batch_size)
         for (batch_n, (input, target)) in enumerate(train_dataset):
-            loss = train_step(optim, model, input, target)
+            with tf.GradientTape() as tape:
+                predictions = model(input)
+                loss = criteria(target, predictions)
+                grads = tape.gradient(loss, model.trainable_variables)
+                optimizer.apply_gradients(zip(grads, model.trainable_variables))
             losses.append(loss)
             print(f'epoch {epoch} batch {batch_n} has loss: {loss}')
 
@@ -142,6 +149,7 @@ if __name__ == '__main__':
     plt.xlabel('batch number')
     plt.ylabel('loss')
     plt.plot(losses)
+    plt.plot(np.poly1d(np.polyfit(range(len(losses)), losses, 5))(range(len(losses))))
     plt.savefig(args.output + '-loss.png')
 
     # test overall accuracy

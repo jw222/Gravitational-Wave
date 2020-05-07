@@ -16,6 +16,6 @@ python3 oneChan.py \
 	--num_residuals 6 \
 	--blank_ratio 0.5 \
 	--lr 1e-5 \
-	--batch 32 \
-	--epoch 100 \
-	--output 151012H8L5E100F256B32MSE
+	--batch 16 \
+	--epoch 25 \
+	--output 151012H8L5E25F256B16MSE
