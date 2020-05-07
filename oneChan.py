@@ -137,13 +137,13 @@ if __name__ == '__main__':
         test_dataset_exist = tf.data.Dataset.from_generator(generator,
                                                             (tf.float64, tf.float64),
                                                             ((8192, 1), 8192),
-                                                            (args.test_file, prefix, 0., snr))
+                                                            (args.test_file, prefix, 0., (snr, snr)))
         test_dataset_exist = test_dataset_exist.batch(args.batch_size)
         exist = model.predict(test_dataset_exist)
         test_dataset_blank = tf.data.Dataset.from_generator(generator,
                                                             (tf.float64, tf.float64),
                                                             ((8192, 1), 8192),
-                                                            (args.test_file, prefix, 1., snr))
+                                                            (args.test_file, prefix, 1., (snr, snr)))
         test_dataset_blank = test_dataset_blank.batch(args.batch_size)
         blank = model.predict(test_dataset_blank)
 

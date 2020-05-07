@@ -113,7 +113,7 @@ if __name__ == '__main__':
         stdoutOrigin = sys.stdout
         sys.stdout = open(args.output + '.txt', 'w')
 
-    if not (os.path.exists(args.model_H + '.index') and os.path.exists(args.model_L + '.index')):
+    while not (os.path.exists(args.model_H + '.index') and os.path.exists(args.model_L + '.index')):
         time.sleep(1800)
     time.sleep(5)
 
@@ -160,13 +160,13 @@ if __name__ == '__main__':
         test_dataset_exist = tf.data.Dataset.from_generator(generator,
                                                             (tf.float64, tf.float64),
                                                             ((8192, 2), 8192),
-                                                            (args.test_file, args.event, 0., snr))
+                                                            (args.test_file, args.event, 0., (snr, snr)))
         test_dataset_exist = test_dataset_exist.batch(args.batch_size)
         exist = model.predict(test_dataset_exist)
         test_dataset_blank = tf.data.Dataset.from_generator(generator,
                                                             (tf.float64, tf.float64),
                                                             ((8192, 2), 8192),
-                                                            (args.test_file, args.event, 1., snr))
+                                                            (args.test_file, args.event, 1., (snr, snr)))
         test_dataset_blank = test_dataset_blank.batch(args.batch_size)
         blank = model.predict(test_dataset_blank)
 
