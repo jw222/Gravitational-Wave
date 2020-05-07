@@ -130,7 +130,7 @@ if __name__ == '__main__':
         train_dataset = tf.data.Dataset.from_generator(generator,
                                                        (tf.float64, tf.float64),
                                                        ((8192, 2), 8192),
-                                                       (args.train_file, prefix, args.blank_ratio, (0.5, maxSNR[epoch])))
+                                                       (args.train_file, args.event, args.blank_ratio, (0.5, maxSNR[epoch])))
         train_dataset = train_dataset.shuffle(buffer_size=9861).batch(args.batch_size)
         for (batch_n, (input, target)) in enumerate(train_dataset):
             with tf.GradientTape() as tape:
